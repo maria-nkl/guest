@@ -54,7 +54,8 @@ namespace гостиница
                             id SERIAL PRIMARY KEY,
                             full_name_or_organization TEXT NOT NULL,
                             phone TEXT NOT NULL,
-                            discount TEXT DEFAULT 'None'
+                            discount TEXT DEFAULT 'None',
+                            is_organization BOOLEAN DEFAULT FALSE
                         )", connection))
                     {
                         command.ExecuteNonQuery();
@@ -147,10 +148,10 @@ namespace гостиница
                 if ((long)checkCommand.ExecuteScalar() == 0)
                 {
                     using (var insertCommand = new NpgsqlCommand(@"
-                        INSERT INTO guests (full_name_or_organization, phone, discount) VALUES 
-                        ('Иванов Алексей Петрович', '+79161234567', '5%'),
-                        ('ООО Ромашка', '+74951234567', '10%'),
-                        ('Сидорова Мария Ивановна', '+79261234567', 'None')", connection))
+            INSERT INTO guests (full_name_or_organization, phone, discount, is_organization) VALUES 
+            ('Иванов Алексей Петрович', '+79161234567', 'None', FALSE),
+            ('ООО Ромашка', '+74951234567', '10%', TRUE),
+            ('Сидорова Мария Ивановна', '+79261234567', 'None', FALSE)", connection))
                     {
                         insertCommand.ExecuteNonQuery();
                     }
@@ -163,7 +164,7 @@ namespace гостиница
                 if ((long) checkCommand.ExecuteScalar() == 0)
                 {
                     using (var insertCommand = new NpgsqlCommand(@"
-                        INSERT INTO rooms (number, floor, category, capacity, price_per_day) VALUES 
+                        INSERT INTO rooms (room_number, floor, category, capacity, price_per_day) VALUES 
                         (101, 1, 'Стандарт', 2, 2500.00),
                         (204, 2, 'Комфорт', 2, 3500.00),
                         (303, 3, 'Люкс', 4, 5500.00),
@@ -304,7 +305,7 @@ namespace гостиница
                     connection.Open();
 
                     using (var command = new NpgsqlCommand(
-                        "SELECT room_number, guest_surname FROM rooms WHERE guest_surname ILIKE @search",
+                        "SELECT full_name_or_organization, phone FROM guests WHERE full_name_or_organization ILIKE @search and is_organization = 'FALSE'",
                         connection))
                     {
                         command.Parameters.AddWithValue("@search", $"%{searchText}%");
@@ -323,6 +324,40 @@ namespace гостиница
 
             return result;
         }
+
+        // Метод для поиска организаций
+        public DataTable SearchOrganizations(string searchText)
+        {
+            var result = new DataTable();
+
+            try
+            {
+                using (var connection = new NpgsqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    using (var command = new NpgsqlCommand(
+                        "SELECT full_name_or_organization, phone, discount FROM guests WHERE full_name_or_organization ILIKE @search and is_organization = 'TRUE'",
+                        connection))
+                    {
+                        command.Parameters.AddWithValue("@search", $"%{searchText}%");
+
+                        using (var adapter = new NpgsqlDataAdapter(command))
+                        {
+                            adapter.Fill(result);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка поиска: {ex.Message}");
+            }
+
+            return result;
+        }
+
+
         public DataTable GetAllGuests()
         {
             var result = new DataTable();
@@ -331,13 +366,39 @@ namespace гостиница
             {
                 using (var connection = new NpgsqlConnection(connectionString))
                 using (var command = new NpgsqlCommand(
-                    "SELECT id, full_name_or_organization, phone, discount FROM guests",
+                    "SELECT id, full_name_or_organization, phone FROM guests WHERE is_organization = 'FALSE'",
                     connection))
                 {
                     connection.Open();
                     using (var adapter = new NpgsqlDataAdapter(command))
                     {
                     adapter.Fill(result);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка получения данных: {ex.Message}");
+            }
+
+            return result;
+        }
+
+        public DataTable GetAllOrganizations()
+        {
+            var result = new DataTable();
+
+            try
+            {
+                using (var connection = new NpgsqlConnection(connectionString))
+                using (var command = new NpgsqlCommand(
+                    "SELECT id, full_name_or_organization, phone, discount FROM guests WHERE is_organization = 'TRUE'",
+                    connection))
+                {
+                    connection.Open();
+                    using (var adapter = new NpgsqlDataAdapter(command))
+                    {
+                        adapter.Fill(result);
                     }
                 }
             }
@@ -375,13 +436,37 @@ namespace гостиница
             return result;
         }
 
-        public bool AddGuest(string fullNameOrOrganization, string phone, string discount)
+        public bool AddGuest(string fullNameOrOrganization, string phone)
         {
             try
             {
                 using (var connection = new NpgsqlConnection(connectionString))
                 using (var command = new NpgsqlCommand(
-                    "INSERT INTO guests (full_name_or_organization, phone, discount) VALUES (@fullName, @phone, @discount)",
+                    "INSERT INTO guests (full_name_or_organization, phone) VALUES (@fullName, @phone)",
+                    connection))
+                {
+                    command.Parameters.AddWithValue("@fullName", fullNameOrOrganization);
+                    command.Parameters.AddWithValue("@phone", phone);
+
+                    connection.Open();
+                    int rowsAffected = command.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при добавлении гостя в БД: {ex.Message}");
+                return false;
+            }
+        }
+
+        public bool AddOrganization(string fullNameOrOrganization, string phone, string discount)
+        {
+            try
+            {
+                using (var connection = new NpgsqlConnection(connectionString))
+                using (var command = new NpgsqlCommand(
+                    "INSERT INTO guests (full_name_or_organization, phone, discount, is_organization) VALUES (@fullName, @phone, @discount, TRUE)",
                     connection))
                 {
                     command.Parameters.AddWithValue("@fullName", fullNameOrOrganization);

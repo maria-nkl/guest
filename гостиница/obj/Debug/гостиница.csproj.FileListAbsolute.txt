@@ -32,3 +32,4 @@ C:\Users\nikol\VS project\гостиница\гостиница\bin\Debug\System
 C:\Users\nikol\VS project\гостиница\гостиница\obj\Debug\гостиница.csproj.Up2Date
 C:\Users\nikol\VS project\гостиница\гостиница\obj\Debug\гостиница.Form3.resources
 C:\Users\nikol\VS project\гостиница\гостиница\obj\Debug\гостиница.Form4.resources
+C:\Users\nikol\VS project\гостиница\гостиница\obj\Debug\гостиница.Form5.resources

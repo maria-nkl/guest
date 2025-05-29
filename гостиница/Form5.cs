@@ -10,34 +10,29 @@ using System.Windows.Forms;
 
 namespace гостиница
 {
-
-    public partial class Form4 : Form
+    public partial class Form5 : Form
     {
         private readonly Database db;
-        public Form4()
+        public Form5()
         {
             InitializeComponent();
             db = new Database("Host=localhost;Database=hotel;Username=postgres;Password=root");
         }
 
-        private void Form4_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button1_Click(object sender, EventArgs e)
+        private void add_organization_Click(object sender, EventArgs e)
         {
             try
             {
                 // Получаем данные из текстовых полей
-                string fullName = full_name.Text.Trim();
+                string fullName = full_name_organization.Text.Trim();
                 string phone = number_phone.Text.Trim();
+                string discount = sale.Text.Trim();
 
                 // Проверяем, что обязательные поля заполнены
                 if (string.IsNullOrEmpty(fullName))
                 {
-                    MessageBox.Show("Пожалуйста, введите ФИО или наименование организации");
-                    full_name.Focus(); // Устанавливаем фокус на поле
+                    MessageBox.Show("Пожалуйста, введите наименование организации");
+                    full_name_organization.Focus(); // Устанавливаем фокус на поле
                     return;
                 }
 
@@ -49,17 +44,31 @@ namespace гостиница
                     return;
                 }
 
+                // Валидация скидки
+                if (!string.IsNullOrEmpty(discount) && !discount.EndsWith("%") && discount != "None")
+                {
+                    MessageBox.Show("Скидка должна быть в формате 'X%' или 'None'");
+                    sale.Focus();
+                    return;
+                }
+
+                // Если скидка не указана, устанавливаем значение по умолчанию
+                if (string.IsNullOrEmpty(discount))
+                {
+                    discount = "None";
+                }
 
                 // Добавляем гостя в базу данных
-                bool success = db.AddGuest(fullName, phone);
+                bool success = db.AddOrganization(fullName, phone, discount);
 
                 if (success)
                 {
                     MessageBox.Show("Гость успешно добавлен!");
 
                     // Очищаем поля после успешного добавления
-                    full_name.Text = "";
+                    full_name_organization.Text = "";
                     number_phone.Text = "";
+                    sale.Text = "";
 
                     // Закрываем форму после успешного добавления
                     this.DialogResult = DialogResult.OK;
@@ -67,12 +76,12 @@ namespace гостиница
                 }
                 else
                 {
-                    MessageBox.Show("Не удалось добавить гостя");
+                    MessageBox.Show("Не удалось добавить организацию");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при добавлении гостя: {ex.Message}");
+                MessageBox.Show($"Ошибка при добавлении организации: {ex.Message}");
             }
         }
     }
