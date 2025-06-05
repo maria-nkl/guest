@@ -6,6 +6,22 @@ using System.Windows.Forms;
 
 namespace гостиница
 {
+    public class RoomInfo
+    {
+        public int Floor { get; set; }
+        public int Capacity { get; set; }
+        public string Category { get; set; }
+    }
+
+    public class BookingInfo
+    {
+        public int BookingId { get; set; }
+        public string GuestName { get; set; }
+        public string GuestPhone { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+    }
+
     internal class Database
     {
         private readonly string connectionString;
@@ -93,7 +109,9 @@ namespace гостиница
                             start_date DATE NOT NULL,
                             end_date DATE NOT NULL,
                             guest_id INTEGER REFERENCES guests(id),
-                            services INTEGER[] DEFAULT ARRAY[]::INTEGER[]
+                            services INTEGER[] DEFAULT ARRAY[]::INTEGER[],
+                            price_per_day DECIMAL(10,2) DEFAULT 0.00,
+                            request_details TEXT DEFAULT ''
                         )", connection))
                     {
                         command.ExecuteNonQuery();
@@ -165,10 +183,10 @@ namespace гостиница
                 {
                     using (var insertCommand = new NpgsqlCommand(@"
                         INSERT INTO rooms (room_number, floor, category, capacity, price_per_day) VALUES 
-                        (101, 1, 'Стандарт', 2, 2500.00),
-                        (204, 2, 'Комфорт', 2, 3500.00),
+                        (101, 1, 'Стандарт', 2, 3500.00),
+                        (204, 2, 'Эконом', 2, 2000.00),
                         (303, 3, 'Люкс', 4, 5500.00),
-                        (405, 4, 'Президентский', 2, 8500.00)", connection))
+                        (405, 4, 'Стандарт', 2, 3500.00)", connection))
                     {
                         insertCommand.ExecuteNonQuery();
                     }
@@ -484,5 +502,128 @@ namespace гостиница
                 return false;
             }
         }
+
+
+        public RoomInfo GetRoomInfo(int roomNumber)
+        {
+            try
+            {
+                using (var connection = new NpgsqlConnection(connectionString))
+                {
+                    connection.Open();
+                    string query = "SELECT floor, capacity, category FROM rooms WHERE room_number = @roomNumber";
+
+                    using (var command = new NpgsqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@roomNumber", roomNumber);
+
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                return new RoomInfo
+                                {
+                                    Floor = reader.GetInt32(0),
+                                    Capacity = reader.GetInt32(1),
+                                    Category = reader.GetString(2)
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка получения информации о номере: {ex.Message}");
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Получает информацию о текущем бронировании номера
+        /// </summary>
+        public BookingInfo GetCurrentBookingInfo(int roomNumber)
+        {
+            try
+            {
+                using (var connection = new NpgsqlConnection(connectionString))
+                {
+                    connection.Open();
+                    string query = @"
+                SELECT b.id, g.full_name_or_organization, g.phone, b.start_date, b.end_date 
+                FROM bookings b
+                JOIN guests g ON b.guest_id = g.id
+                WHERE b.room_number = @roomNumber 
+                AND CURRENT_DATE BETWEEN b.start_date AND b.end_date";
+
+                    using (var command = new NpgsqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@roomNumber", roomNumber);
+
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                return new BookingInfo
+                                {
+                                    BookingId = reader.GetInt32(0),
+                                    GuestName = reader.GetString(1),
+                                    GuestPhone = reader.GetString(2),
+                                    StartDate = reader.GetDateTime(3),
+                                    EndDate = reader.GetDateTime(4)
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка получения информации о бронировании: {ex.Message}");
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Получает список услуг для бронирования
+        /// </summary>
+        public List<string> GetBookingServices(int bookingId)
+        {
+            var services = new List<string>();
+
+            try
+            {
+                using (var connection = new NpgsqlConnection(connectionString))
+                {
+                    connection.Open();
+                    string query = @"
+                SELECT s.service_name 
+                FROM bookings b
+                JOIN UNNEST(b.services) AS service_id ON true
+                JOIN services s ON s.id = service_id
+                WHERE b.id = @bookingId";
+
+                    using (var command = new NpgsqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@bookingId", bookingId);
+
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                services.Add(reader.GetString(0));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка получения списка услуг: {ex.Message}");
+            }
+            return services;
+        }
+ 
+
     }
 }

@@ -30,6 +30,14 @@
         {
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.labelselectroom = new System.Windows.Forms.Label();
+            this.dataGridViewRoomsChast = new System.Windows.Forms.DataGridView();
+            this.searchRoomChast = new System.Windows.Forms.Button();
+            this.comboBoxCategory = new System.Windows.Forms.ComboBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.kolvoGuests = new System.Windows.Forms.NumericUpDown();
+            this.label10 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
             this.labelStatus = new System.Windows.Forms.Label();
             this.new_guest = new System.Windows.Forms.Button();
             this.labelGuest = new System.Windows.Forms.Label();
@@ -37,11 +45,14 @@
             this.buttonSearch = new System.Windows.Forms.Button();
             this.textBoxSearch = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.monthCalendar1 = new System.Windows.Forms.MonthCalendar();
             this.label1 = new System.Windows.Forms.Label();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.dataGridViewRoomsOrg = new System.Windows.Forms.DataGridView();
+            this.searchRoomsOrg = new System.Windows.Forms.Button();
+            this.label9 = new System.Windows.Forms.Label();
+            this.kolvoguestsOrg = new System.Windows.Forms.NumericUpDown();
+            this.label5 = new System.Windows.Forms.Label();
             this.labelStatusOrg = new System.Windows.Forms.Label();
             this.new_org = new System.Windows.Forms.Button();
             this.labelOrg = new System.Windows.Forms.Label();
@@ -49,17 +60,22 @@
             this.SearchOrg = new System.Windows.Forms.Button();
             this.textBoxSearchOrg = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.numericUpDown2 = new System.Windows.Forms.NumericUpDown();
             this.monthCalendar2 = new System.Windows.Forms.MonthCalendar();
             this.label8 = new System.Windows.Forms.Label();
+            this.labelselectrooms = new System.Windows.Forms.Label();
+            this.checkedListBoxSelectServicesOrg = new System.Windows.Forms.CheckedListBox();
+            this.buttonBookRoomsOrg = new System.Windows.Forms.Button();
+            this.buttonBookingChast = new System.Windows.Forms.Button();
+            this.checkedListBoxSelectServicesChast = new System.Windows.Forms.CheckedListBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRoomsChast)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.kolvoGuests)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.tabPage2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRoomsOrg)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.kolvoguestsOrg)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -69,11 +85,21 @@
             this.tabControl1.Location = new System.Drawing.Point(9, 6);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(1080, 607);
+            this.tabControl1.Size = new System.Drawing.Size(1141, 1100);
             this.tabControl1.TabIndex = 0;
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.buttonBookingChast);
+            this.tabPage1.Controls.Add(this.checkedListBoxSelectServicesChast);
+            this.tabPage1.Controls.Add(this.labelselectroom);
+            this.tabPage1.Controls.Add(this.dataGridViewRoomsChast);
+            this.tabPage1.Controls.Add(this.searchRoomChast);
+            this.tabPage1.Controls.Add(this.comboBoxCategory);
+            this.tabPage1.Controls.Add(this.label7);
+            this.tabPage1.Controls.Add(this.kolvoGuests);
+            this.tabPage1.Controls.Add(this.label10);
+            this.tabPage1.Controls.Add(this.label11);
             this.tabPage1.Controls.Add(this.labelStatus);
             this.tabPage1.Controls.Add(this.new_guest);
             this.tabPage1.Controls.Add(this.labelGuest);
@@ -81,18 +107,114 @@
             this.tabPage1.Controls.Add(this.buttonSearch);
             this.tabPage1.Controls.Add(this.textBoxSearch);
             this.tabPage1.Controls.Add(this.label2);
-            this.tabPage1.Controls.Add(this.label3);
-            this.tabPage1.Controls.Add(this.numericUpDown1);
             this.tabPage1.Controls.Add(this.monthCalendar1);
             this.tabPage1.Controls.Add(this.label1);
             this.tabPage1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tabPage1.Location = new System.Drawing.Point(4, 25);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(1072, 578);
+            this.tabPage1.Size = new System.Drawing.Size(1133, 1071);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Частное лицо";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // labelselectroom
+            // 
+            this.labelselectroom.AutoSize = true;
+            this.labelselectroom.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelselectroom.Location = new System.Drawing.Point(423, 794);
+            this.labelselectroom.Name = "labelselectroom";
+            this.labelselectroom.Size = new System.Drawing.Size(153, 25);
+            this.labelselectroom.TabIndex = 39;
+            this.labelselectroom.Text = "Выбран номер:";
+            // 
+            // dataGridViewRoomsChast
+            // 
+            this.dataGridViewRoomsChast.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewRoomsChast.Location = new System.Drawing.Point(412, 438);
+            this.dataGridViewRoomsChast.Name = "dataGridViewRoomsChast";
+            this.dataGridViewRoomsChast.RowHeadersWidth = 51;
+            this.dataGridViewRoomsChast.RowTemplate.Height = 24;
+            this.dataGridViewRoomsChast.Size = new System.Drawing.Size(702, 343);
+            this.dataGridViewRoomsChast.TabIndex = 38;
+            this.dataGridViewRoomsChast.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewRoomsChast_CellContentClick);
+            this.dataGridViewRoomsChast.SelectionChanged += new System.EventHandler(this.dataGridViewRoomsChast_SelectionChanged);
+            // 
+            // searchRoomChast
+            // 
+            this.searchRoomChast.Location = new System.Drawing.Point(141, 554);
+            this.searchRoomChast.Name = "searchRoomChast";
+            this.searchRoomChast.Size = new System.Drawing.Size(144, 56);
+            this.searchRoomChast.TabIndex = 37;
+            this.searchRoomChast.Text = "Искать";
+            this.searchRoomChast.UseVisualStyleBackColor = true;
+            this.searchRoomChast.Click += new System.EventHandler(this.searchRoomChast_Click);
+            // 
+            // comboBoxCategory
+            // 
+            this.comboBoxCategory.FormattingEnabled = true;
+            this.comboBoxCategory.Items.AddRange(new object[] {
+            "Стандарт",
+            "Эконом",
+            "Люкс"});
+            this.comboBoxCategory.Location = new System.Drawing.Point(228, 492);
+            this.comboBoxCategory.Name = "comboBoxCategory";
+            this.comboBoxCategory.Size = new System.Drawing.Size(166, 30);
+            this.comboBoxCategory.TabIndex = 36;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label7.Location = new System.Drawing.Point(21, 438);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(197, 25);
+            this.label7.TabIndex = 35;
+            this.label7.Text = "Количество гостей:";
+            // 
+            // kolvoGuests
+            // 
+            this.kolvoGuests.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.kolvoGuests.Location = new System.Drawing.Point(241, 433);
+            this.kolvoGuests.Maximum = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.kolvoGuests.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.kolvoGuests.Name = "kolvoGuests";
+            this.kolvoGuests.Size = new System.Drawing.Size(91, 34);
+            this.kolvoGuests.TabIndex = 34;
+            this.kolvoGuests.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label10.Location = new System.Drawing.Point(-109, 365);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(1563, 25);
+            this.label10.TabIndex = 33;
+            this.label10.Text = "_________________________________________________________________________________" +
+    "____________________________________________________________";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label11.Location = new System.Drawing.Point(21, 493);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(191, 25);
+            this.label11.TabIndex = 32;
+            this.label11.Text = "Категория номера:";
             // 
             // labelStatus
             // 
@@ -163,29 +285,6 @@
             this.label2.TabIndex = 7;
             this.label2.Text = "Гость:";
             // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label3.Location = new System.Drawing.Point(23, 291);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(197, 25);
-            this.label3.TabIndex = 6;
-            this.label3.Text = "Количество гостей:";
-            // 
-            // numericUpDown1
-            // 
-            this.numericUpDown1.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.numericUpDown1.Location = new System.Drawing.Point(240, 286);
-            this.numericUpDown1.Maximum = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(91, 34);
-            this.numericUpDown1.TabIndex = 5;
-            // 
             // monthCalendar1
             // 
             this.monthCalendar1.Location = new System.Drawing.Point(38, 51);
@@ -206,6 +305,14 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.buttonBookRoomsOrg);
+            this.tabPage2.Controls.Add(this.checkedListBoxSelectServicesOrg);
+            this.tabPage2.Controls.Add(this.labelselectrooms);
+            this.tabPage2.Controls.Add(this.dataGridViewRoomsOrg);
+            this.tabPage2.Controls.Add(this.searchRoomsOrg);
+            this.tabPage2.Controls.Add(this.label9);
+            this.tabPage2.Controls.Add(this.kolvoguestsOrg);
+            this.tabPage2.Controls.Add(this.label5);
             this.tabPage2.Controls.Add(this.labelStatusOrg);
             this.tabPage2.Controls.Add(this.new_org);
             this.tabPage2.Controls.Add(this.labelOrg);
@@ -213,18 +320,84 @@
             this.tabPage2.Controls.Add(this.SearchOrg);
             this.tabPage2.Controls.Add(this.textBoxSearchOrg);
             this.tabPage2.Controls.Add(this.label6);
-            this.tabPage2.Controls.Add(this.label7);
-            this.tabPage2.Controls.Add(this.numericUpDown2);
             this.tabPage2.Controls.Add(this.monthCalendar2);
             this.tabPage2.Controls.Add(this.label8);
             this.tabPage2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tabPage2.Location = new System.Drawing.Point(4, 25);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(1072, 578);
+            this.tabPage2.Size = new System.Drawing.Size(1133, 1071);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Организация";
             this.tabPage2.UseVisualStyleBackColor = true;
+            this.tabPage2.Click += new System.EventHandler(this.tabPage2_Click);
+            // 
+            // dataGridViewRoomsOrg
+            // 
+            this.dataGridViewRoomsOrg.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewRoomsOrg.Location = new System.Drawing.Point(386, 425);
+            this.dataGridViewRoomsOrg.Name = "dataGridViewRoomsOrg";
+            this.dataGridViewRoomsOrg.RowHeadersWidth = 51;
+            this.dataGridViewRoomsOrg.RowTemplate.Height = 24;
+            this.dataGridViewRoomsOrg.Size = new System.Drawing.Size(715, 301);
+            this.dataGridViewRoomsOrg.TabIndex = 31;
+            this.dataGridViewRoomsOrg.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewRoomsOrg_CellContentClick);
+            this.dataGridViewRoomsOrg.Click += new System.EventHandler(this.dataGridViewRoomsOrg_Click);
+            // 
+            // searchRoomsOrg
+            // 
+            this.searchRoomsOrg.Location = new System.Drawing.Point(122, 509);
+            this.searchRoomsOrg.Name = "searchRoomsOrg";
+            this.searchRoomsOrg.Size = new System.Drawing.Size(144, 56);
+            this.searchRoomsOrg.TabIndex = 30;
+            this.searchRoomsOrg.Text = "Искать";
+            this.searchRoomsOrg.UseVisualStyleBackColor = true;
+            this.searchRoomsOrg.Click += new System.EventHandler(this.searchRoomsOrg_Click);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label9.Location = new System.Drawing.Point(31, 442);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(197, 25);
+            this.label9.TabIndex = 28;
+            this.label9.Text = "Количество гостей:";
+            // 
+            // kolvoguestsOrg
+            // 
+            this.kolvoguestsOrg.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.kolvoguestsOrg.Location = new System.Drawing.Point(252, 437);
+            this.kolvoguestsOrg.Maximum = new decimal(new int[] {
+            20,
+            0,
+            0,
+            0});
+            this.kolvoguestsOrg.Minimum = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.kolvoguestsOrg.Name = "kolvoguestsOrg";
+            this.kolvoguestsOrg.Size = new System.Drawing.Size(91, 34);
+            this.kolvoguestsOrg.TabIndex = 27;
+            this.kolvoguestsOrg.Value = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label5.Location = new System.Drawing.Point(-115, 388);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(1563, 25);
+            this.label5.TabIndex = 26;
+            this.label5.Text = "_________________________________________________________________________________" +
+    "____________________________________________________________";
+            this.label5.Click += new System.EventHandler(this.label5_Click_1);
             // 
             // labelStatusOrg
             // 
@@ -297,31 +470,6 @@
             this.label6.Text = "Организация:";
             this.label6.Click += new System.EventHandler(this.label6_Click);
             // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label7.Location = new System.Drawing.Point(29, 311);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(197, 25);
-            this.label7.TabIndex = 17;
-            this.label7.Text = "Количество гостей:";
-            this.label7.Click += new System.EventHandler(this.label7_Click);
-            // 
-            // numericUpDown2
-            // 
-            this.numericUpDown2.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.numericUpDown2.Location = new System.Drawing.Point(246, 306);
-            this.numericUpDown2.Maximum = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
-            this.numericUpDown2.Name = "numericUpDown2";
-            this.numericUpDown2.Size = new System.Drawing.Size(91, 34);
-            this.numericUpDown2.TabIndex = 16;
-            this.numericUpDown2.ValueChanged += new System.EventHandler(this.numericUpDown2_ValueChanged);
-            // 
             // monthCalendar2
             // 
             this.monthCalendar2.Location = new System.Drawing.Point(78, 74);
@@ -341,11 +489,68 @@
             this.label8.Text = "Период проживания:";
             this.label8.Click += new System.EventHandler(this.label8_Click);
             // 
+            // labelselectrooms
+            // 
+            this.labelselectrooms.AutoSize = true;
+            this.labelselectrooms.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelselectrooms.Location = new System.Drawing.Point(399, 742);
+            this.labelselectrooms.Name = "labelselectrooms";
+            this.labelselectrooms.Size = new System.Drawing.Size(0, 25);
+            this.labelselectrooms.TabIndex = 40;
+            // 
+            // checkedListBoxSelectServicesOrg
+            // 
+            this.checkedListBoxSelectServicesOrg.FormattingEnabled = true;
+            this.checkedListBoxSelectServicesOrg.Items.AddRange(new object[] {
+            "Завтрак",
+            "Ужин",
+            "Уборка",
+            "Развлечения"});
+            this.checkedListBoxSelectServicesOrg.Location = new System.Drawing.Point(100, 596);
+            this.checkedListBoxSelectServicesOrg.Name = "checkedListBoxSelectServicesOrg";
+            this.checkedListBoxSelectServicesOrg.Size = new System.Drawing.Size(180, 92);
+            this.checkedListBoxSelectServicesOrg.TabIndex = 41;
+            // 
+            // buttonBookRoomsOrg
+            // 
+            this.buttonBookRoomsOrg.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.buttonBookRoomsOrg.Location = new System.Drawing.Point(78, 733);
+            this.buttonBookRoomsOrg.Name = "buttonBookRoomsOrg";
+            this.buttonBookRoomsOrg.Size = new System.Drawing.Size(240, 84);
+            this.buttonBookRoomsOrg.TabIndex = 42;
+            this.buttonBookRoomsOrg.Text = "Забронировать";
+            this.buttonBookRoomsOrg.UseVisualStyleBackColor = true;
+            this.buttonBookRoomsOrg.Click += new System.EventHandler(this.buttonBookRoomsOrg_Click);
+            // 
+            // buttonBookingChast
+            // 
+            this.buttonBookingChast.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.buttonBookingChast.Location = new System.Drawing.Point(92, 763);
+            this.buttonBookingChast.Name = "buttonBookingChast";
+            this.buttonBookingChast.Size = new System.Drawing.Size(240, 87);
+            this.buttonBookingChast.TabIndex = 44;
+            this.buttonBookingChast.Text = "Забронировать";
+            this.buttonBookingChast.UseVisualStyleBackColor = true;
+            this.buttonBookingChast.Click += new System.EventHandler(this.buttonBookingChast_Click);
+            // 
+            // checkedListBoxSelectServicesChast
+            // 
+            this.checkedListBoxSelectServicesChast.FormattingEnabled = true;
+            this.checkedListBoxSelectServicesChast.Items.AddRange(new object[] {
+            "Завтрак",
+            "Ужин",
+            "Уборка",
+            "Развлечения"});
+            this.checkedListBoxSelectServicesChast.Location = new System.Drawing.Point(121, 637);
+            this.checkedListBoxSelectServicesChast.Name = "checkedListBoxSelectServicesChast";
+            this.checkedListBoxSelectServicesChast.Size = new System.Drawing.Size(194, 119);
+            this.checkedListBoxSelectServicesChast.TabIndex = 43;
+            // 
             // Form3
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1101, 853);
+            this.ClientSize = new System.Drawing.Size(1192, 1053);
             this.Controls.Add(this.tabControl1);
             this.Name = "Form3";
             this.Text = "Добавить бронь";
@@ -353,12 +558,14 @@
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRoomsChast)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.kolvoGuests)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRoomsOrg)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.kolvoguestsOrg)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -370,8 +577,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.MonthCalendar monthCalendar1;
-        private System.Windows.Forms.NumericUpDown numericUpDown1;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox textBoxSearch;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button buttonSearch;
@@ -386,9 +591,25 @@
         private System.Windows.Forms.Button SearchOrg;
         private System.Windows.Forms.TextBox textBoxSearchOrg;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.NumericUpDown numericUpDown2;
         private System.Windows.Forms.MonthCalendar monthCalendar2;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.NumericUpDown kolvoguestsOrg;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Button searchRoomsOrg;
+        private System.Windows.Forms.DataGridView dataGridViewRoomsOrg;
+        private System.Windows.Forms.DataGridView dataGridViewRoomsChast;
+        private System.Windows.Forms.Button searchRoomChast;
+        private System.Windows.Forms.ComboBox comboBoxCategory;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.NumericUpDown kolvoGuests;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label labelselectroom;
+        private System.Windows.Forms.Label labelselectrooms;
+        private System.Windows.Forms.CheckedListBox checkedListBoxSelectServicesOrg;
+        private System.Windows.Forms.Button buttonBookRoomsOrg;
+        private System.Windows.Forms.Button buttonBookingChast;
+        private System.Windows.Forms.CheckedListBox checkedListBoxSelectServicesChast;
     }
 }

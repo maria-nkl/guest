@@ -43,31 +43,36 @@ namespace гостиница
 
                 if (panelLabel != null && int.TryParse(panelLabel.Text, out int roomNumber))
                 {
+                    // Получаем информацию о номере
+                    var roomInfo = db.GetRoomInfo(roomNumber);
+                    if (roomInfo == null)
+                    {
+                        MessageBox.Show("Не удалось получить информацию о номере");
+                        return;
+                    }
 
-                    // Получаем информацию о госте
-                    string guestInfo = db.GetGuestByRoomNumber(roomNumber);
-                    string phoneNumber = db.GetGuestNumberByRoomNumber(roomNumber);
-                    string floorNumber = db.GetFloorNumberByRoomNumber(roomNumber);
+                    var bookingInfo = db.GetCurrentBookingInfo(roomNumber);
+                    List<string> activeServices = bookingInfo != null ?
+                        db.GetBookingServices(bookingInfo.BookingId) :
+                        new List<string>();
 
-                    // Формируем строки для отображения
-                    string displayName = guestInfo ?? "Номер свободен";
-                    string displayPhone = !string.IsNullOrEmpty(phoneNumber) ? phoneNumber : "-";
-                    string displayFloor = floorNumber;
-
-                    // Создаем форму и передаем данные
+                    // Создаем форму с полной информацией
                     Form2 form2 = new Form2(
                         labelText: panelLabel.Text,
-                        guestName: displayName,
-                        guestPhone: displayPhone,
-                        numberFloor: displayFloor
+                        guestName: bookingInfo?.GuestName,
+                        guestPhone: bookingInfo?.GuestPhone,
+                        numberFloor: roomInfo.Floor.ToString(),
+                        capacity: roomInfo.Capacity.ToString(),
+                        category: roomInfo.Category,
+                        startDate: bookingInfo?.StartDate.ToShortDateString(),
+                        endDate: bookingInfo?.EndDate.ToShortDateString(),
+                        activeServices: activeServices
                     );
 
-                    // Подписываемся на событие изменения цвета
                     form2.PanelColorChanged += (newColor) =>
                     {
-                        clickedPanel.BackColor = newColor; // Меняем цвет панели
+                        clickedPanel.BackColor = newColor;
                     };
-
 
                     form2.ShowDialog();
                 }
