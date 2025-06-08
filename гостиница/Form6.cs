@@ -1,11 +1,7 @@
-﻿using Npgsql;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
+﻿using System;
+using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -13,6 +9,8 @@ namespace гостиница
 {
     public partial class Form6 : Form
     {
+        private static readonly HttpClient client = new HttpClient();
+
         public Form6()
         {
             InitializeComponent();
@@ -23,7 +21,7 @@ namespace гостиница
             textBoxPassword.PasswordChar = '●'; // скрытие пароля
         }
 
-        private void buttonLogin_Click(object sender, EventArgs e)
+        private async void buttonLogin_Click(object sender, EventArgs e)
         {
             string login = textBoxLogin.Text.Trim();
             string password = textBoxPassword.Text.Trim();
@@ -36,47 +34,49 @@ namespace гостиница
 
             try
             {
-                using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
+                var loginData = new { login = login, password = password };
+                string json = JsonSerializer.Serialize(loginData);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                string apiUrl = "https://localhost:7029/api/Users/login";
+
+                HttpResponseMessage response = await client.PostAsync(apiUrl, content);
+
+                if (response.IsSuccessStatusCode)
                 {
-                    connection.Open();
+                    string responseBody = await response.Content.ReadAsStringAsync();
 
-                    string query = @"
-                        SELECT u.full_name, r.role_name
-                        FROM users u
-                        JOIN roles r ON u.role_id = r.id
-                        WHERE u.login = @login AND u.password = @password";
+                    // API возвращает JSON с именем и ролью
+                    var userInfo = JsonSerializer.Deserialize<UserInfo>(responseBody);
 
-                    using (var cmd = new NpgsqlCommand(query, connection))
+                    if (userInfo != null && !string.IsNullOrEmpty(userInfo.fullName))
                     {
-                        cmd.Parameters.AddWithValue("@login", login);
-                        cmd.Parameters.AddWithValue("@password", password);
+                        SessionUser.fullName = userInfo.fullName;
+                        SessionUser.roleName = userInfo.roleName;
 
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                // Успешный вход
-                                SessionUser.FullName = reader.GetString(0);
-                                SessionUser.RoleName = reader.GetString(1);
-
-                                /*Form1 mainForm = new Form1();
-                                this.Hide();
-                                mainForm.Show();*/
-                                this.DialogResult = DialogResult.OK;
-                                this.Close();
-                            }
-                            else
-                            {
-                                MessageBox.Show("Неверный логин или пароль.");
-                            }
-                        }
+                        this.DialogResult = DialogResult.OK;
+                        this.Close();
                     }
+                    else
+                    {
+                        MessageBox.Show("Неверный логин или пароль.");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Ошибка аутентификации: Неверный логин или пароль.");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ошибка подключения: " + ex.Message);
+                MessageBox.Show("Ошибка подключения к API: " + ex.Message);
             }
+        }
+
+        private class UserInfo
+        {
+            public string fullName { get; set; }
+            public string roleName { get; set; }
         }
     }
 }

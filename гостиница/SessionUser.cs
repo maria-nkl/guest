@@ -8,7 +8,7 @@ namespace гостиница
 {
     internal class SessionUser
     {
-        public static string FullName { get; set; }
-        public static string RoleName { get; set; }
+        public static string fullName { get; set; }
+        public static string roleName { get; set; }
     }
 }

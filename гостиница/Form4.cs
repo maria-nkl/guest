@@ -1,23 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
+using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace гостиница
 {
-
     public partial class Form4 : Form
     {
-        private readonly Database db;
+        private static readonly HttpClient client = new HttpClient();
+        private const string apiBaseUrl = "https://localhost:7029/api"; // замените при необходимости
+
         public Form4()
         {
             InitializeComponent();
-            db = new Database("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root");
         }
 
         private void Form4_Load(object sender, EventArgs e)
@@ -25,55 +22,63 @@ namespace гостиница
 
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
             try
             {
-                // Получаем данные из текстовых полей
                 string fullName = full_name.Text.Trim();
                 string phone = number_phone.Text.Trim();
 
-                // Проверяем, что обязательные поля заполнены
                 if (string.IsNullOrEmpty(fullName))
                 {
                     MessageBox.Show("Пожалуйста, введите ФИО или наименование организации");
-                    full_name.Focus(); // Устанавливаем фокус на поле
+                    full_name.Focus();
                     return;
                 }
 
-                // Валидация номера телефона
-                if (string.IsNullOrEmpty(phone) || !System.Text.RegularExpressions.Regex.IsMatch(phone, @"^\+?[0-9\s\-\(\)]{7,}$"))
+                if (string.IsNullOrEmpty(phone) || !Regex.IsMatch(phone, @"^\+?[0-9\s\-\(\)]{7,}$"))
                 {
                     MessageBox.Show("Пожалуйста, введите корректный номер телефона");
                     number_phone.Focus();
                     return;
                 }
 
+                var guest = new Guest
+                {
+                    FullNameOrOrganization = fullName,
+                    Phone = phone,
+                    IsOrganization = false
+                };
 
-                // Добавляем гостя в базу данных
-                bool success = db.AddGuest(fullName, phone);
+                var json = JsonSerializer.Serialize(guest);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                if (success)
+                var response = await client.PostAsync($"{apiBaseUrl}/Guests", content);
+                if (response.IsSuccessStatusCode)
                 {
                     MessageBox.Show("Гость успешно добавлен!");
-
-                    // Очищаем поля после успешного добавления
                     full_name.Text = "";
                     number_phone.Text = "";
-
-                    // Закрываем форму после успешного добавления
                     this.DialogResult = DialogResult.OK;
                     this.Close();
                 }
                 else
                 {
-                    MessageBox.Show("Не удалось добавить гостя");
+                    string error = await response.Content.ReadAsStringAsync();
+                    MessageBox.Show($"Ошибка при добавлении: {response.StatusCode}\\n{error}");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при добавлении гостя: {ex.Message}");
+                MessageBox.Show($"Ошибка: {ex.Message}");
             }
+        }
+
+        public class Guest
+        {
+            public string FullNameOrOrganization { get; set; }
+            public string Phone { get; set; }
+            public bool IsOrganization { get; set; }
         }
     }
 }

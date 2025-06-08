@@ -1,26 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Windows.Forms;
 
 namespace гостиница
 {
     internal static class Program
     {
-        /// <summary>
-        /// Главная точка входа для приложения.
-        /// </summary>
+        public static IServiceProvider Services { get; private set; }
+
         [STAThread]
         static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Form6 loginForm = new Form6();
-                if (loginForm.ShowDialog() == DialogResult.OK)
-                {
-                    Application.Run(new Form1());
-                }
+
+            var serviceCollection = new ServiceCollection();
+
+            // Регистрируем все формы, которые будем использовать
+            serviceCollection.AddTransient<Form1>();
+            serviceCollection.AddTransient<Form6>();
+
+            Services = serviceCollection.BuildServiceProvider();
+
+            // Показываем форму логина
+            var loginForm = Services.GetRequiredService<Form6>();
+            var result = loginForm.ShowDialog();
+
+            if (result == DialogResult.OK)
+            {
+                // Если логин успешен, запускаем главную форму
+                Application.Run(Services.GetRequiredService<Form1>());
+            }
+            else
+            {
+                // Если отменили логин или неудача — завершаем приложение
+                Application.Exit();
+            }
         }
     }
 }
+
+

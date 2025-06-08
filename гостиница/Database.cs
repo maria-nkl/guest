@@ -1,4 +1,4 @@
-﻿using Npgsql;
+﻿/*using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace гостиница
 {
-    public class RoomInfo
+    *//*public class RoomInfo
     {
         public int Floor { get; set; }
         public int Capacity { get; set; }
@@ -20,7 +20,7 @@ namespace гостиница
         public string GuestPhone { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-    }
+    }*//*
 
     internal class Database
     {
@@ -179,7 +179,7 @@ namespace гостиница
             // Проверка и заполнение таблицы Номера
             using (var checkCommand = new NpgsqlCommand("SELECT COUNT(*) FROM rooms", connection))
             {
-                if ((long) checkCommand.ExecuteScalar() == 0)
+                if ((long)checkCommand.ExecuteScalar() == 0)
                 {
                     using (var insertCommand = new NpgsqlCommand(@"
                         INSERT INTO rooms (room_number, floor, category, capacity, price_per_day) VALUES 
@@ -337,7 +337,7 @@ namespace гостиница
             }
             catch (Exception ex)
             {
-            MessageBox.Show($"Ошибка поиска: {ex.Message}");
+                MessageBox.Show($"Ошибка поиска: {ex.Message}");
             }
 
             return result;
@@ -390,7 +390,7 @@ namespace гостиница
                     connection.Open();
                     using (var adapter = new NpgsqlDataAdapter(command))
                     {
-                    adapter.Fill(result);
+                        adapter.Fill(result);
                     }
                 }
             }
@@ -623,7 +623,7 @@ namespace гостиница
             }
             return services;
         }
- 
+
 
     }
-}
+}*/

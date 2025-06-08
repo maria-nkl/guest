@@ -1,28 +1,32 @@
-﻿using Npgsql;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace гостиница
 {
     public partial class Form3 : Form
     {
-        private readonly Database db;
+        private static readonly HttpClient client = new HttpClient();
+        private const string apiBaseUrl = "https://localhost:7029/api"; // Замените на ваш URL API
 
         public Form3()
         {
             InitializeComponent();
-            db = new Database("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root");
             dataGridViewRoomsOrg.SelectionChanged += DataGridViewRoomsOrg_SelectionChanged;
         }
 
-        private void Form3_Load(object sender, EventArgs e)
+        private async void Form3_Load(object sender, EventArgs e)
         {
             ConfigureDataGridView();
-            LoadAllGuests();
-            LoadAllOrganizations();
+            await LoadAllGuestsAsync();
+            await LoadAllOrganizationsAsync();
             labelGuest.Text = "Выбранный гость: ";
             labelOrg.Text = "Выбранный гость: ";
         }
@@ -36,35 +40,32 @@ namespace гостиница
             dataGridView1.MultiSelect = false;
             dataGridView1.Columns.Clear();
 
-            // Добавляем колонки, соответствующие структуре таблицы guests
             dataGridView1.Columns.Add(new DataGridViewTextBoxColumn()
             {
-                Name = "id",
+                Name = "Id",
                 HeaderText = "ID",
-                DataPropertyName = "id",
+                DataPropertyName = "Id",
                 Width = 50,
-                Visible = false // Скрываем ID, если не нужно показывать
+                Visible = false
             });
 
             dataGridView1.Columns.Add(new DataGridViewTextBoxColumn()
             {
-                Name = "full_name",
+                Name = "FullNameOrOrganization",
                 HeaderText = "ФИО",
-                DataPropertyName = "full_name_or_organization",
+                DataPropertyName = "FullNameOrOrganization",
                 Width = 200
             });
 
             dataGridView1.Columns.Add(new DataGridViewTextBoxColumn()
             {
-                Name = "phone",
+                Name = "Phone",
                 HeaderText = "Телефон",
-                DataPropertyName = "phone",
+                DataPropertyName = "Phone",
                 Width = 120
             });
 
             dataGridView1.SelectionChanged += DataGridView_SelectionChanged;
-
-
 
             dataGridView2.AutoGenerateColumns = false;
             dataGridView2.ReadOnly = true;
@@ -73,37 +74,36 @@ namespace гостиница
             dataGridView2.MultiSelect = false;
             dataGridView2.Columns.Clear();
 
-            // Добавляем колонки, соответствующие структуре таблицы guests
             dataGridView2.Columns.Add(new DataGridViewTextBoxColumn()
             {
-                Name = "id",
+                Name = "Id",
                 HeaderText = "ID",
-                DataPropertyName = "id",
+                DataPropertyName = "Id",
                 Width = 50,
-                Visible = false // Скрываем ID, если не нужно показывать
+                Visible = false
             });
 
             dataGridView2.Columns.Add(new DataGridViewTextBoxColumn()
             {
-                Name = "full_name",
+                Name = "FullNameOrOrganization",
                 HeaderText = "Организация",
-                DataPropertyName = "full_name_or_organization",
+                DataPropertyName = "FullNameOrOrganization",
                 Width = 200
             });
 
             dataGridView2.Columns.Add(new DataGridViewTextBoxColumn()
             {
-                Name = "phone",
+                Name = "Phone",
                 HeaderText = "Телефон",
-                DataPropertyName = "phone",
+                DataPropertyName = "Phone",
                 Width = 120
             });
 
             dataGridView2.Columns.Add(new DataGridViewTextBoxColumn()
             {
-                Name = "discount",
+                Name = "Discount",
                 HeaderText = "Скидка",
-                DataPropertyName = "discount",
+                DataPropertyName = "Discount",
                 Width = 80
             });
 
@@ -115,55 +115,62 @@ namespace гостиница
             if (dataGridView1.SelectedRows.Count > 0)
             {
                 DataGridViewRow selectedRow = dataGridView1.SelectedRows[0];
-                string guestName = selectedRow.Cells["full_name"].Value?.ToString() ?? "не указано";
+                string guestName = selectedRow.Cells["FullNameOrOrganization"].Value?.ToString() ?? "не указано";
                 labelGuest.Text = $"Выбранный гость: {guestName}";
             }
 
             if (dataGridView2.SelectedRows.Count > 0)
             {
                 DataGridViewRow selectedRow = dataGridView2.SelectedRows[0];
-                string guestName = selectedRow.Cells["full_name"].Value?.ToString() ?? "не указано";
+                string guestName = selectedRow.Cells["FullNameOrOrganization"].Value?.ToString() ?? "не указано";
                 labelOrg.Text = $"Выбранный гость: {guestName}";
             }
         }
 
-        private void LoadAllGuests()
+        private async Task LoadAllGuestsAsync()
         {
             try
             {
-                DataTable allGuests = db.GetAllGuests();
-                dataGridView1.DataSource = allGuests;
-
-                // Обновляем статусную строку
-                labelStatus.Text = $"Всего гостей: {allGuests.Rows.Count}";
+                var response = await client.GetAsync($"{apiBaseUrl}/Guests?isOrganization=false");
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    var guests = JsonSerializer.Deserialize<List<Guest>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    dataGridView1.DataSource = guests;
+                    labelStatus.Text = $"Всего гостей: {guests.Count}";
+                }
+                else
+                {
+                    MessageBox.Show("Не удалось загрузить список гостей");
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка загрузки данных: {ex.Message}");
             }
-
         }
 
-        private void LoadAllOrganizations()
+        private async Task LoadAllOrganizationsAsync()
         {
             try
             {
-                DataTable allOrganizations = db.GetAllOrganizations();
-                dataGridView2.DataSource = allOrganizations;
-
-                // Обновляем статусную строку
-                labelStatusOrg.Text = $"Всего гостей: {allOrganizations.Rows.Count}";
+                var response = await client.GetAsync($"{apiBaseUrl}/Organizations?isOrganization=true");
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    var organizations = JsonSerializer.Deserialize<List<Guest>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    dataGridView2.DataSource = organizations;
+                    labelStatusOrg.Text = $"Всего организаций: {organizations.Count}";
+                }
+                else
+                {
+                    MessageBox.Show("Не удалось загрузить список организаций");
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка загрузки данных: {ex.Message}");
             }
-
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            
         }
 
         private void new_guest_Click(object sender, EventArgs e)
@@ -171,17 +178,575 @@ namespace гостиница
             Form4 form4 = new Form4();
             if (form4.ShowDialog() == DialogResult.OK)
             {
-                LoadAllGuests();
+                LoadAllGuestsAsync();
             }
         }
 
-        // Добавляем кнопку для обновления данных
-        private void btnRefresh_Click(object sender, EventArgs e)
+        private async void btnRefresh_Click(object sender, EventArgs e)
         {
-            LoadAllGuests();
+            await LoadAllGuestsAsync();
+        }
+
+        private async void buttonSearch_Click(object sender, EventArgs e)
+        {
+            string searchText = textBoxSearch.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                await LoadAllGuestsAsync();
+                return;
+            }
+
+            try
+            {
+                var response = await client.GetAsync($"{apiBaseUrl}/Guests/search?query={searchText}&isOrganization=false");
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    var guests = JsonSerializer.Deserialize<List<Guest>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    dataGridView1.DataSource = guests;
+                    labelStatus.Text = $"Найдено гостей: {guests.Count}";
+                }
+                else
+                {
+                    MessageBox.Show("Гости не найдены");
+                    await LoadAllGuestsAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка поиска: {ex.Message}");
+                await LoadAllGuestsAsync();
+            }
+        }
+
+        private void new_org_Click(object sender, EventArgs e)
+        {
+            Form5 form5 = new Form5();
+            if (form5.ShowDialog() == DialogResult.OK)
+            {
+                LoadAllOrganizationsAsync();
+            }
+        }
+
+        private async void SearchOrg_Click(object sender, EventArgs e)
+        {
+            string searchText = textBoxSearchOrg.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                await LoadAllOrganizationsAsync();
+                return;
+            }
+
+            try
+            {
+                var response = await client.GetAsync($"{apiBaseUrl}/Organizations/search?query={searchText}&isOrganization=true");
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    var organizations = JsonSerializer.Deserialize<List<Guest>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    dataGridView2.DataSource = organizations;
+                    labelStatusOrg.Text = $"Найдено организаций: {organizations.Count}";
+                }
+                else
+                {
+                    MessageBox.Show("Организации не найдены");
+                    await LoadAllOrganizationsAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка поиска: {ex.Message}");
+                await LoadAllOrganizationsAsync();
+            }
+        }
+
+        private async void searchRoomChast_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DateTime startDate = monthCalendar1.SelectionStart;
+                DateTime endDate = monthCalendar1.SelectionEnd;
+                string selectedCategory = comboBoxCategory.SelectedItem?.ToString();
+                int minCapacity = (int)kolvoGuests.Value;
+
+                if (string.IsNullOrEmpty(selectedCategory))
+                {
+                    MessageBox.Show("Выберите категорию номера!");
+                    return;
+                }
+
+                // Логируем параметры запроса
+                Console.WriteLine($"Запрос: startDate={startDate}, endDate={endDate}, Category={selectedCategory}, Capacity={minCapacity}");
+
+                using (var client = new HttpClient())
+                {
+                    string url = $"{apiBaseUrl}/Rooms/search?" +
+                                $"startDate={startDate:yyyy-MM-dd}&" +
+                                $"endDate={endDate:yyyy-MM-dd}&" +
+                                $"category={Uri.EscapeDataString(selectedCategory)}&" +
+                                $"minCapacity={minCapacity}";
+
+                    Console.WriteLine($"URL запроса: {url}");
+
+                    var response = await client.GetAsync(url);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string json = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine($"Ответ API: {json}");
+
+                        var rooms = JsonSerializer.Deserialize<List<Room>>(json,
+                            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                        dataGridViewRoomsChast.DataSource = rooms;
+
+                        if (rooms.Count > 0)
+                        {
+                            dataGridViewRoomsChast.ClearSelection();
+                            labelselectroom.Text = "Выбран номер: (не выбран)";
+                        }
+                        else
+                        {
+                            MessageBox.Show("Свободные номера не найдены");
+                        }
+                    }
+                    else
+                    {
+                        string errorContent = await response.Content.ReadAsStringAsync();
+                        MessageBox.Show($"Ошибка сервера: {response.StatusCode}\n{errorContent}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}");
+                Console.WriteLine($"Ошибка: {ex}");
+            }
+        }
+
+        private void dataGridViewRoomsChast_SelectionChanged(object sender, EventArgs e)
+        {
+            if (dataGridViewRoomsChast.SelectedRows.Count > 0)
+            {
+                DataGridViewRow selectedRow = dataGridViewRoomsChast.SelectedRows[0];
+                string roomNumber = selectedRow.Cells["RoomNumber"].Value?.ToString() ?? "не указан";
+                labelselectroom.Text = $"Выбран номер: {roomNumber}";
+            }
+            else
+            {
+                labelselectroom.Text = "Выбран номер: (не выбран)";
+            }
+        }
+
+        private async void searchRoomsOrg_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DateTime startDate = monthCalendar2.SelectionStart;
+                DateTime endDate = monthCalendar2.SelectionEnd;
+                int requiredCapacity = (int)kolvoguestsOrg.Value;
+
+                // Формируем URL запроса
+                string url = $"{apiBaseUrl}/Rooms/searchForOrganization?" +
+                           $"startDate={startDate:yyyy-MM-dd}&" +
+                           $"endDate={endDate:yyyy-MM-dd}&" +
+                           $"minCapacity=1"; // Ищем все номера с вместимостью от 1
+
+                Console.WriteLine($"Запрос свободных номеров: {url}");
+
+                var response = await client.GetAsync(url);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    var allRooms = JsonSerializer.Deserialize<List<Room>>(json,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    Console.WriteLine($"Получено номеров: {allRooms?.Count ?? 0}");
+
+                    if (allRooms == null || allRooms.Count == 0)
+                    {
+                        MessageBox.Show("Свободные номера не найдены");
+                        dataGridViewRoomsOrg.DataSource = null;
+                        return;
+                    }
+
+                    // Создаем DataTable для результатов
+                    DataTable result = new DataTable();
+                    result.Columns.Add("RoomNumber", typeof(int));
+                    result.Columns.Add("Floor", typeof(int));
+                    result.Columns.Add("Category", typeof(string));
+                    result.Columns.Add("Capacity", typeof(int));
+                    result.Columns.Add("PricePerDay", typeof(decimal));
+
+                    // Алгоритм подбора номеров
+                    var selectedRooms = new List<Room>();
+                    int remainingCapacity = requiredCapacity;
+
+                    // 1. Сортируем номера по этажам и вместимости
+                    var roomsByFloor = allRooms
+                        .OrderBy(r => r.Floor)
+                        .ThenByDescending(r => r.Capacity)
+                        .ToList();
+
+                    // 2. Пытаемся найти номера на одном этаже
+                    foreach (var FloorGroup in allRooms.GroupBy(r => r.Floor).OrderBy(g => g.Key))
+                    {
+                        int FloorCapacity = FloorGroup.Sum(r => r.Capacity);
+                        if (FloorCapacity >= remainingCapacity)
+                        {
+                            foreach (var room in FloorGroup.OrderByDescending(r => r.Capacity))
+                            {
+                                selectedRooms.Add(room);
+                                result.Rows.Add(room.RoomNumber, room.Floor, room.Category,
+                                              room.Capacity, room.PricePerDay);
+                                remainingCapacity -= room.Capacity;
+                                if (remainingCapacity <= 0) break;
+                            }
+                            break;
+                        }
+                    }
+
+                    // 3. Если не хватило одного этажа - добираем с других
+                    if (remainingCapacity > 0)
+                    {
+                        selectedRooms.Clear();
+                        result.Clear();
+                        remainingCapacity = requiredCapacity;
+
+                        foreach (var room in allRooms.OrderByDescending(r => r.Capacity))
+                        {
+                            selectedRooms.Add(room);
+                            result.Rows.Add(room.RoomNumber, room.Floor, room.Category,
+                                          room.Capacity, room.PricePerDay);
+                            remainingCapacity -= room.Capacity;
+                            if (remainingCapacity <= 0) break;
+                        }
+                    }
+
+                    // 4. Отображаем результаты
+                    if (remainingCapacity > 0)
+                    {
+                        MessageBox.Show($"Недостаточно мест! Доступно только {requiredCapacity - remainingCapacity} из {requiredCapacity}");
+                    }
+
+                    dataGridViewRoomsOrg.DataSource = result;
+                    dataGridViewRoomsOrg.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                    dataGridViewRoomsOrg.MultiSelect = true;
+                    dataGridViewRoomsOrg.ClearSelection();
+
+                    UpdateSelectedRoomsLabel();
+                }
+                else
+                {
+                    string errorContent = await response.Content.ReadAsStringAsync();
+                    MessageBox.Show($"Ошибка: {response.StatusCode}\n{errorContent}");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при поиске номеров: {ex.Message}");
+                Console.WriteLine($"Ошибка: {ex}");
+            }
         }
 
 
+
+        private async void UpdateSelectedRoomsLabel()
+        {
+            if (dataGridViewRoomsOrg.SelectedRows.Count == 0)
+            {
+                labelselectrooms.Text = "Номера не выбраны";
+                return;
+            }
+
+            var selectedRooms = new List<string>();
+            int totalCapacity = 0;
+            var Floors = new HashSet<int>();
+
+            foreach (DataGridViewRow row in dataGridViewRoomsOrg.SelectedRows)
+            {
+                if (row.Cells["RoomNumber"].Value != null)
+                {
+                    string roomNumber = row.Cells["RoomNumber"].Value.ToString();
+                    selectedRooms.Add(roomNumber);
+
+                    if (row.Cells["Capacity"].Value != null)
+                        totalCapacity += Convert.ToInt32(row.Cells["Capacity"].Value);
+
+                    if (row.Cells["Floor"].Value != null)
+                        Floors.Add(Convert.ToInt32(row.Cells["Floor"].Value));
+                }
+            }
+
+            DateTime startDate = monthCalendar2.SelectionStart;
+            DateTime endDate = monthCalendar2.SelectionEnd;
+            int numberOfDays = (endDate - startDate).Days;
+            if (numberOfDays == 0) numberOfDays = 1;
+
+            decimal totalRoomCostPerDay = 0;
+            foreach (DataGridViewRow row in dataGridViewRoomsOrg.SelectedRows)
+            {
+                if (decimal.TryParse(row.Cells["PricePerDay"].Value?.ToString(), out decimal pricePerDay))
+                {
+                    totalRoomCostPerDay += pricePerDay;
+                }
+            }
+
+            decimal totalRoomCost = totalRoomCostPerDay * numberOfDays;
+
+            decimal totalServiceCostPerDay = 0;
+            decimal totalServiceCost = 0;
+            List<string> selectedServices = checkedListBoxSelectServicesOrg.CheckedItems.Cast<string>().ToList();
+
+            decimal DiscountPercent = 0;
+            if (dataGridView2.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Выберите организацию.");
+                return;
+            }
+
+            int guestId = Convert.ToInt32(dataGridView2.SelectedRows[0].Cells["id"].Value);
+
+            try
+            {
+                // Получаем скидку организации
+                var response = await client.GetAsync($"{apiBaseUrl}/Organizations/{guestId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    var guest = JsonSerializer.Deserialize<Guest>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    if (!string.IsNullOrWhiteSpace(guest.Discount))
+                    {
+                        var cleaned = guest.Discount.Replace("%", "").Trim();
+                        if (decimal.TryParse(cleaned, out decimal parsedDiscount))
+                        {
+                            DiscountPercent = parsedDiscount;
+                        }
+                    }
+                }
+
+                // Получаем цены услуг
+                foreach (string serviceName in selectedServices)
+                {
+                    var serviceResponse = await client.GetAsync($"{apiBaseUrl}/Services?name={serviceName}");
+                    if (serviceResponse.IsSuccessStatusCode)
+                    {
+                        string serviceJson = await serviceResponse.Content.ReadAsStringAsync();
+                        var services = JsonSerializer.Deserialize<List<Service>>(serviceJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (services.Any())
+                        {
+                            totalServiceCostPerDay += services.First().Price;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при расчете стоимости: {ex.Message}");
+                return;
+            }
+
+            totalServiceCost = totalServiceCostPerDay * numberOfDays;
+            decimal totalBeforeDiscount = totalRoomCost + totalServiceCost;
+            decimal DiscountAmount = totalBeforeDiscount * (DiscountPercent / 100);
+            decimal totalCost = totalBeforeDiscount - DiscountAmount;
+
+            string FloorsText = Floors.Count == 1
+                ? $"Этаж: {Floors.First()}"
+                : $"Этажи: {string.Join(", ", Floors.OrderBy(f => f))}";
+
+            labelselectrooms.Text = $"Выбраны номера: {string.Join(", ", selectedRooms)}\n" +
+                                    $"{FloorsText}\n" +
+                                    $"Общая вместимость: {totalCapacity}\n" +
+                                    $"Сумма за номера: {totalRoomCost:N2} руб. ({totalRoomCostPerDay:N2} руб./день)\n" +
+                                    $"Сумма за услуги: {totalServiceCost:N2} руб. ({totalServiceCostPerDay:N2} руб./день)\n" +
+                                    $"Скидка организации: {DiscountPercent}% (-{DiscountAmount:N2} руб.)\n" +
+                                    $"Итого за {numberOfDays} дн.: {totalCost:N2} руб.";
+        }
+
+        private void DataGridViewRoomsOrg_SelectionChanged(object sender, EventArgs e)
+        {
+            UpdateSelectedRoomsLabel();
+        }
+
+        private async void buttonBookRoomsOrg_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (dataGridViewRoomsOrg.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show("Выберите номера для бронирования!");
+                    return;
+                }
+
+                if (dataGridView2.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show("Выберите организацию для бронирования!");
+                    return;
+                }
+
+                DateTime startDate = monthCalendar2.SelectionStart;
+                DateTime endDate = monthCalendar2.SelectionEnd;
+                int guestId = Convert.ToInt32(dataGridView2.SelectedRows[0].Cells["Id"].Value);
+
+                List<int> selectedServices = new List<int>();
+                foreach (string serviceName in checkedListBoxSelectServicesOrg.CheckedItems)
+                {
+                    var getResponse = await client.GetAsync($"{apiBaseUrl}/Services?name={serviceName}");
+                    if (getResponse.IsSuccessStatusCode)
+                    {
+                        string json = await getResponse.Content.ReadAsStringAsync();
+                        var services = JsonSerializer.Deserialize<List<Service>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (services.Any())
+                        {
+                            selectedServices.Add(services.First().Id);
+                        }
+                    }
+                }
+
+                var bookings = new List<BookingRequest>();
+                foreach (DataGridViewRow row in dataGridViewRoomsOrg.SelectedRows)
+                {
+                    int roomNumber = Convert.ToInt32(row.Cells["RoomNumber"].Value);
+                    decimal pricePerDay = Convert.ToDecimal(row.Cells["PricePerDay"].Value);
+
+                    int days = (endDate - startDate).Days + 1;
+                    decimal totalPrice = pricePerDay * days;
+
+                    bookings.Add(new BookingRequest
+                    {
+                        RoomNumber = roomNumber,
+                        StartDate = startDate,
+                        EndDate = endDate,
+                        GuestId = guestId,
+                        Services = selectedServices,
+                        TotalPrice = totalPrice
+                    });
+                }
+
+                var content = new StringContent(JsonSerializer.Serialize(bookings), Encoding.UTF8, "application/json");
+                var postResponse = await client.PostAsync($"{apiBaseUrl}/Bookings/bulk", content);
+
+                if (postResponse.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Бронирование успешно создано!");
+                }
+                else
+                {
+                    MessageBox.Show("Не удалось создать бронирование");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}");
+            }
+        }
+
+        private async void buttonBookingChast_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (dataGridViewRoomsChast.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show("Выберите номер для бронирования!");
+                    return;
+                }
+
+                if (dataGridView1.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show("Выберите гостя для бронирования!");
+                    return;
+                }
+
+                DateTime startDate = monthCalendar1.SelectionStart;
+                DateTime endDate = monthCalendar1.SelectionEnd;
+                int guestId = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells["Id"].Value);
+                int roomNumber = Convert.ToInt32(dataGridViewRoomsChast.SelectedRows[0].Cells["RoomNumber"].Value);
+
+                List<int> selectedServices = new List<int>();
+                foreach (string serviceName in checkedListBoxSelectServicesChast.CheckedItems)
+                {
+                    var getResponse = await client.GetAsync($"{apiBaseUrl}/Services?name={serviceName}");
+                    if (getResponse.IsSuccessStatusCode)
+                    {
+                        string json = await getResponse.Content.ReadAsStringAsync();
+                        var services = JsonSerializer.Deserialize<List<Service>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (services.Any())
+                        {
+                            selectedServices.Add(services.First().Id);
+                        }
+                    }
+                }
+
+                var booking = new BookingRequest
+                {
+                    RoomNumber = roomNumber,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    GuestId = guestId,
+                    Services = selectedServices,
+                    TotalPrice = 0 // Рассчитается на сервере
+                };
+
+                var content = new StringContent(JsonSerializer.Serialize(booking), Encoding.UTF8, "application/json");
+                var postResponse = await client.PostAsync($"{apiBaseUrl}/Bookings", content);
+
+                if (postResponse.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Бронирование успешно создано!");
+                }
+                else
+                {
+                    MessageBox.Show("Не удалось создать бронирование");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}");
+            }
+
+        }
+
+
+        // Классы для десериализации JSON
+        public class Guest
+        {
+            public int Id { get; set; }
+            public string FullNameOrOrganization { get; set; }
+            public string Phone { get; set; }
+            public string Discount { get; set; }
+            public bool IsOrganization { get; set; }
+        }
+
+        public class Room
+        {
+            public int RoomNumber { get; set; }
+            public int Floor { get; set; }
+            public string Category { get; set; }
+            public int Capacity { get; set; }
+            public decimal PricePerDay { get; set; }
+        }
+
+        public class Service
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public decimal Price { get; set; }
+        }
+
+        public class BookingRequest
+        {
+            public int RoomNumber { get; set; }
+            public DateTime StartDate { get; set; }
+            public DateTime EndDate { get; set; }
+            public int GuestId { get; set; }
+            public List<int> Services { get; set; }
+            public decimal TotalPrice { get; set; }
+        }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
@@ -225,7 +790,7 @@ namespace гостиница
 
         private void button2_Click(object sender, EventArgs e)
         {
-            
+
         }
 
         private void textBox1_TextChanged_1(object sender, EventArgs e)
@@ -258,706 +823,23 @@ namespace гостиница
 
         }
 
-        private void buttonSearch_Click(object sender, EventArgs e)
-        {
-            string searchText = textBoxSearch.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(searchText))
-            {
-                LoadAllGuests();
-                return;
-            }
-
-            try
-            {
-                DataTable searchResults = db.SearchGuests(searchText);
-                dataGridView1.DataSource = searchResults;
-
-                if (searchResults.Rows.Count == 0)
-                {
-                    MessageBox.Show("Гости не найдены");
-                    LoadAllGuests();
-                }
-                else
-                {
-                    labelStatus.Text = $"Найдено гостей: {searchResults.Rows.Count}";
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка поиска: {ex.Message}");
-                LoadAllGuests();
-            }
-        }
-
-        private void new_org_Click(object sender, EventArgs e)
-        {
-            Form5 form5 = new Form5();
-            if (form5.ShowDialog() == DialogResult.OK)
-            {
-                LoadAllOrganizations();
-            }
-        }
-
-        private void SearchOrg_Click(object sender, EventArgs e)
-        {
-            string searchText = textBoxSearchOrg.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(searchText))
-            {
-                LoadAllOrganizations();
-                return;
-            }
-
-            try
-            {
-                DataTable searchResults = db.SearchOrganizations(searchText);
-                dataGridView2.DataSource = searchResults;
-
-                if (searchResults.Rows.Count == 0)
-                {
-                    MessageBox.Show("Организации не найдены");
-                    LoadAllOrganizations();
-                }
-                else
-                {
-                    labelStatusOrg.Text = $"Найдено организаций: {searchResults.Rows.Count}";
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка поиска: {ex.Message}");
-                LoadAllOrganizations();
-            }
-        }
-
-        private void tabPage2_Click(object sender, EventArgs e)
+        private void label5_Click_1(object sender, EventArgs e)
         {
 
         }
-
-        private void searchRoomChast_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // Получаем выбранные даты из monthCalendar1
-                DateTime startDate = monthCalendar1.SelectionStart;
-                DateTime endDate = monthCalendar1.SelectionEnd;
-
-                // Получаем выбранную категорию и минимальную вместимость
-                string selectedCategory = comboBoxCategory.SelectedItem?.ToString();
-                int minCapacity = (int)kolvoGuests.Value;
-
-                // Проверяем, выбрана ли категория
-                if (string.IsNullOrEmpty(selectedCategory))
-                {
-                    MessageBox.Show("Выберите категорию номера!");
-                    return;
-                }
-
-                // Подключение к базе данных (используем Npgsql)
-                using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
-                {
-                    connection.Open();
-
-                    // SQL-запрос для поиска свободных номеров
-                    string query = @"
-                SELECT r.room_number, r.floor, r.category, r.capacity, r.price_per_day
-                FROM rooms r
-                WHERE r.category = @category
-                AND r.capacity >= @minCapacity
-                AND NOT EXISTS (
-                    SELECT 1 FROM bookings b
-                    WHERE b.room_number = r.room_number
-                    AND (
-                        (b.start_date <= @endDate AND b.end_date >= @startDate)
-                    )
-                )
-                ORDER BY r.room_number";
-
-                    using (var command = new NpgsqlCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@category", selectedCategory);
-                        command.Parameters.AddWithValue("@minCapacity", minCapacity);
-                        command.Parameters.AddWithValue("@startDate", startDate);
-                        command.Parameters.AddWithValue("@endDate", endDate);
-
-                        // Заполняем DataGridView
-                        var adapter = new NpgsqlDataAdapter(command);
-                        var dataTable = new DataTable();
-                        adapter.Fill(dataTable);
-
-                        dataGridViewRoomsChast.DataSource = dataTable;
-                    }
-                }
-                dataGridViewRoomsChast.SelectionChanged += dataGridViewRoomsChast_SelectionChanged;
-                if (dataGridViewRoomsChast.Rows.Count > 0)
-                {
-                    dataGridViewRoomsChast.ClearSelection();
-                    labelselectroom.Text = "Выбран номер: (не выбран)";
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}");
-            }
-        }
-
-        private void dataGridViewRoomsChast_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
-        private void dataGridViewRoomsChast_SelectionChanged(object sender, EventArgs e)
-        {
-            if (dataGridViewRoomsChast.SelectedRows.Count > 0)
-            {
-                DataGridViewRow selectedRow = dataGridViewRoomsChast.SelectedRows[0];
-                string roomNumber = selectedRow.Cells["room_number"].Value?.ToString() ?? "не указан";
-                labelselectroom.Text = $"Выбран номер: {roomNumber}";
-            }
-            else
-            {
-                labelselectroom.Text = "Выбран номер: (не выбран)";
-            }
-        }
-
         private void dataGridViewRoomsOrg_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
         }
+        private void dataGridViewRoomsChast_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
 
+        }
         private void dataGridViewRoomsOrg_Click(object sender, EventArgs e)
         {
 
         }
-
-        private void searchRoomsOrg_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                DateTime startDate = monthCalendar2.SelectionStart;
-                DateTime endDate = monthCalendar2.SelectionEnd;
-                int requiredCapacity = (int)kolvoguestsOrg.Value;
-
-                using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
-                {
-                    connection.Open();
-
-                    // 1. Получаем все свободные номера
-                    string freeRoomsQuery = @"
-                SELECT r.room_number, r.floor, r.category, r.capacity, r.price_per_day
-                FROM rooms r
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM bookings b
-                    WHERE b.room_number = r.room_number
-                    AND (b.start_date <= @endDate AND b.end_date >= @startDate)
-                )
-                ORDER BY r.floor, r.capacity ASC"; // Сначала маленькие номера
-
-                    var adapter = new NpgsqlDataAdapter(freeRoomsQuery, connection);
-                    adapter.SelectCommand.Parameters.AddWithValue("@startDate", startDate);
-                    adapter.SelectCommand.Parameters.AddWithValue("@endDate", endDate);
-
-                    DataTable freeRooms = new DataTable();
-                    adapter.Fill(freeRooms);
-
-                    // 2. Алгоритм выбора номеров
-                    DataTable result = freeRooms.Clone();
-                    int remainingCapacity = requiredCapacity;
-                    var roomsByFloor = freeRooms.AsEnumerable()
-                        .GroupBy(r => r.Field<int>("floor"))
-                        .OrderBy(g => g.Key); // Сортировка по номеру этажа
-
-                    // Сначала пробуем найти один этаж
-                    foreach (var floorGroup in roomsByFloor)
-                    {
-                        int floorCapacity = floorGroup.Sum(r => r.Field<int>("capacity"));
-                        if (floorCapacity >= remainingCapacity)
-                        {
-                            foreach (DataRow row in floorGroup.OrderByDescending(r => r.Field<int>("capacity")))
-                            {
-                                result.ImportRow(row);
-                                remainingCapacity -= row.Field<int>("capacity");
-                                if (remainingCapacity <= 0) break;
-                            }
-                            break;
-                        }
-                    }
-
-                    // Если не хватило одного этажа - добираем с других
-                    if (remainingCapacity > 0)
-                    {
-                        foreach (var floorGroup in roomsByFloor)
-                        {
-                            foreach (DataRow row in floorGroup.OrderByDescending(r => r.Field<int>("capacity")))
-                            {
-                                if (!result.AsEnumerable().Any(r => r.Field<int>("room_number") == row.Field<int>("room_number")))
-                                {
-                                    result.ImportRow(row);
-                                    remainingCapacity -= row.Field<int>("capacity");
-                                    if (remainingCapacity <= 0) break;
-                                }
-                            }
-                            if (remainingCapacity <= 0) break;
-                        }
-                    }
-
-                    // 3. Если все равно не хватает - показываем что есть
-                    if (remainingCapacity > 0)
-                    {
-                        MessageBox.Show($"Недостаточно мест! Доступно только {requiredCapacity - remainingCapacity} из {requiredCapacity}");
-                    }
-
-                    // 4. Настройка DataGridView
-                    dataGridViewRoomsOrg.DataSource = result;
-                    dataGridViewRoomsOrg.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-                    dataGridViewRoomsOrg.MultiSelect = true;
-                    dataGridViewRoomsOrg.ClearSelection();
-
-                    UpdateSelectedRoomsLabel();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}");
-            }
-        }
-
-        private void UpdateSelectedRoomsLabel()
-        {
-            if (dataGridViewRoomsOrg.SelectedRows.Count == 0)
-            {
-                labelselectrooms.Text = "Номера не выбраны";
-                return;
-            }
-
-            var selectedRooms = new List<string>();
-            int totalCapacity = 0;
-            var floors = new HashSet<int>();
-
-            foreach (DataGridViewRow row in dataGridViewRoomsOrg.SelectedRows)
-            {
-                if (row.Cells["room_number"].Value != null)
-                {
-                    string roomNumber = row.Cells["room_number"].Value.ToString();
-                    selectedRooms.Add(roomNumber);
-
-                    if (row.Cells["capacity"].Value != null)
-                        totalCapacity += Convert.ToInt32(row.Cells["capacity"].Value);
-
-                    if (row.Cells["floor"].Value != null)
-                        floors.Add(Convert.ToInt32(row.Cells["floor"].Value));
-                }
-            }
-
-            DateTime startDate = monthCalendar2.SelectionStart;
-            DateTime endDate = monthCalendar2.SelectionEnd;
-            int numberOfDays = (endDate - startDate).Days;
-            if (numberOfDays == 0) numberOfDays = 1;
-
-            decimal totalRoomCostPerDay = 0;
-            foreach (DataGridViewRow row in dataGridViewRoomsOrg.SelectedRows)
-            {
-                if (decimal.TryParse(row.Cells["price_per_day"].Value?.ToString(), out decimal pricePerDay))
-                {
-                    totalRoomCostPerDay += pricePerDay;
-                }
-                else
-                {
-                    MessageBox.Show("Ошибка: неверный формат 'price_per_day' у одного из номеров.");
-                    return;
-                }
-            }
-
-            decimal totalRoomCost = totalRoomCostPerDay * numberOfDays;
-
-            decimal totalServiceCostPerDay = 0;
-            decimal totalServiceCost = 0;
-            List<string> selectedServices = checkedListBoxSelectServicesOrg.CheckedItems.Cast<string>().ToList();
-
-            decimal discountPercent = 0;
-            if (dataGridView2.SelectedRows.Count == 0)
-            {
-                MessageBox.Show("Выберите организацию.");
-                return;
-            }
-
-            string orgName = dataGridView2.SelectedRows[0].Cells["full_name"].Value?.ToString();
-
-            using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
-            {
-                connection.Open();
-
-                // Получаем скидку
-                string discountQuery = "SELECT discount FROM guests WHERE full_name_or_organization = @orgName";
-                using (var cmd = new NpgsqlCommand(discountQuery, connection))
-                {
-                    cmd.Parameters.AddWithValue("@orgName", orgName);
-                    object result = cmd.ExecuteScalar();
-                    if (result != null && decimal.TryParse(result.ToString().Replace("%", ""), out decimal parsedDiscount))
-                    {
-                        discountPercent = parsedDiscount;
-                    }
-                }
-
-                // Стоимость услуг
-                foreach (string serviceName in selectedServices)
-                {
-                    string query = "SELECT price FROM services WHERE service_name = @name";
-                    using (var cmd = new NpgsqlCommand(query, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@name", serviceName);
-                        object result = cmd.ExecuteScalar();
-                        if (result != null && decimal.TryParse(result.ToString(), out decimal price))
-                        {
-                            totalServiceCostPerDay += price;
-                        }
-                        else
-                        {
-                            MessageBox.Show($"Ошибка при получении цены для услуги '{serviceName}'");
-                            return;
-                        }
-                    }
-                }
-            }
-
-            totalServiceCost = totalServiceCostPerDay * numberOfDays;
-            decimal totalBeforeDiscount = totalRoomCost + totalServiceCost;
-            decimal discountAmount = totalBeforeDiscount * (discountPercent / 100);
-            decimal totalCost = totalBeforeDiscount - discountAmount;
-
-            string floorsText = floors.Count == 1
-                ? $"Этаж: {floors.First()}"
-                : $"Этажи: {string.Join(", ", floors.OrderBy(f => f))}";
-
-            labelselectrooms.Text = $"Выбраны номера: {string.Join(", ", selectedRooms)}\n" +
-                                    $"{floorsText}\n" +
-                                    $"Общая вместимость: {totalCapacity}\n" +
-                                    $"Сумма за номера: {totalRoomCost:N2} руб. ({totalRoomCostPerDay:N2} руб./день)\n" +
-                                    $"Сумма за услуги: {totalServiceCost:N2} руб. ({totalServiceCostPerDay:N2} руб./день)\n" +
-                                    $"Скидка организации: {discountPercent}% (-{discountAmount:N2} руб.)\n" +
-                                    $"Итого за {numberOfDays} дн.: {totalCost:N2} руб.";
-        }
-
-
-        // Обработчик изменения выбора
-        private void DataGridViewRoomsOrg_SelectionChanged(object sender, EventArgs e)
-        {
-            UpdateSelectedRoomsLabel();
-        }
-
-        private void buttonBookRoomsOrg_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // 1. Проверка выбранных данных
-                if (dataGridViewRoomsOrg.SelectedRows.Count == 0)
-                {
-                    MessageBox.Show("Выберите номера для бронирования!");
-                    return;
-                }
-
-                if (dataGridView2.SelectedRows.Count == 0)
-                {
-                    MessageBox.Show("Выберите организацию для бронирования!");
-                    return;
-                }
-
-                DateTime startDate = monthCalendar2.SelectionStart;
-                DateTime endDate = monthCalendar2.SelectionEnd;
-                int guestId = Convert.ToInt32(dataGridView2.SelectedRows[0].Cells["id"].Value);
-
-                // 2. Получаем ID выбранных услуг по их названиям
-                List<int> selectedServices = new List<int>();
-                using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
-                {
-                    connection.Open();
-
-                    foreach (string serviceName in checkedListBoxSelectServicesOrg.CheckedItems)
-                    {
-                        string query = "SELECT id FROM services WHERE service_name = @serviceName";
-                        using (var command = new NpgsqlCommand(query, connection))
-                        {
-                            command.Parameters.AddWithValue("@serviceName", serviceName);
-                            object result = command.ExecuteScalar();
-                            if (result != null)
-                            {
-                                selectedServices.Add(Convert.ToInt32(result));
-                            }
-                        }
-                    }
-                }
-
-                // 3. Создаем бронирование для каждого номера
-                using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
-                {
-                    connection.Open();
-
-                    // Получаем скидку из таблицы guests
-                    decimal discountPercentage = 0;
-                    string discountQuery = "SELECT discount FROM guests WHERE id = @guestId";
-                    using (var discountCommand = new NpgsqlCommand(discountQuery, connection))
-                    {
-                        discountCommand.Parameters.AddWithValue("@guestId", guestId);
-                        object discountResult = discountCommand.ExecuteScalar();
-                        if (discountResult != null && discountResult.ToString() != "None")
-                        {
-                            string discountStr = discountResult.ToString().Trim().Replace("%", "");
-                            if (decimal.TryParse(discountStr, out var parsed))
-                            {
-                                discountPercentage = parsed;
-                            }
-                        }
-                    }
-
-                    using (var transaction = connection.BeginTransaction())
-                    {
-                        try
-                        {
-                            foreach (DataGridViewRow row in dataGridViewRoomsOrg.SelectedRows)
-                            {
-                                int roomNumber = Convert.ToInt32(row.Cells["room_number"].Value);
-
-                                // Проверка доступности номера
-                                string checkQuery = @"
-                    SELECT COUNT(*) FROM bookings 
-                    WHERE room_number = @roomNumber 
-                    AND (start_date <= @endDate AND end_date >= @startDate)";
-
-                                using (var checkCommand = new NpgsqlCommand(checkQuery, connection, transaction))
-                                {
-                                    checkCommand.Parameters.AddWithValue("@roomNumber", roomNumber);
-                                    checkCommand.Parameters.AddWithValue("@startDate", startDate);
-                                    checkCommand.Parameters.AddWithValue("@endDate", endDate);
-
-                                    if ((long)checkCommand.ExecuteScalar() > 0)
-                                    {
-                                        MessageBox.Show($"Номер {roomNumber} уже забронирован на выбранные даты!");
-                                        continue;
-                                    }
-                                }
-
-                                // Получаем цену номера
-                                decimal roomPricePerDay = 0;
-                                string priceQuery = "SELECT price_per_day FROM rooms WHERE room_number = @roomNumber";
-                                using (var priceCommand = new NpgsqlCommand(priceQuery, connection, transaction))
-                                {
-                                    priceCommand.Parameters.AddWithValue("@roomNumber", roomNumber);
-                                    object priceResult = priceCommand.ExecuteScalar();
-                                    if (priceResult != null)
-                                    {
-                                        roomPricePerDay = Convert.ToDecimal(priceResult);
-                                    }
-                                }
-
-                                // Получаем сумму стоимости услуг в сутки
-                                decimal servicesPerDayTotal = 0;
-                                if (selectedServices.Any())
-                                {
-                                    string serviceQuery = "SELECT price FROM services WHERE id = ANY(@ids)";
-                                    using (var serviceCommand = new NpgsqlCommand(serviceQuery, connection, transaction))
-                                    {
-                                        serviceCommand.Parameters.AddWithValue("@ids", selectedServices.ToArray());
-                                        using (var reader = serviceCommand.ExecuteReader())
-                                        {
-                                            while (reader.Read())
-                                            {
-                                                servicesPerDayTotal += reader.GetDecimal(0);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                int days = (endDate - startDate).Days + 1;
-                                decimal totalPrice = (roomPricePerDay + servicesPerDayTotal) * days;
-
-                                // Применение скидки
-                                if (discountPercentage > 0)
-                                {
-                                    totalPrice = totalPrice * (1 - discountPercentage / 100);
-                                }
-
-                                // Создание бронирования
-                                string insertQuery = @"
-                    INSERT INTO bookings 
-                    (room_number, start_date, end_date, guest_id, services, total_price) 
-                    VALUES 
-                    (@roomNumber, @startDate, @endDate, @guestId, @services, @totalPrice)";
-
-                                using (var insertCommand = new NpgsqlCommand(insertQuery, connection, transaction))
-                                {
-                                    insertCommand.Parameters.AddWithValue("@roomNumber", roomNumber);
-                                    insertCommand.Parameters.AddWithValue("@startDate", startDate);
-                                    insertCommand.Parameters.AddWithValue("@endDate", endDate);
-                                    insertCommand.Parameters.AddWithValue("@guestId", guestId);
-                                    insertCommand.Parameters.AddWithValue("@services", selectedServices.Any() ? selectedServices.ToArray() : Array.Empty<int>());
-                                    insertCommand.Parameters.AddWithValue("@totalPrice", totalPrice);
-
-                                    insertCommand.ExecuteNonQuery();
-                                }
-                            }
-
-                            transaction.Commit();
-                            MessageBox.Show("Бронирование успешно создано!");
-                        }
-                        catch (Exception ex)
-                        {
-                            transaction.Rollback();
-                            MessageBox.Show($"Ошибка при бронировании: {ex.Message}");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}");
-            }
-        }
-
-        private void buttonBookingChast_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // 1. Проверка выбранных данных
-                if (dataGridViewRoomsChast.SelectedRows.Count == 0)
-                {
-                    MessageBox.Show("Выберите номер для бронирования!");
-                    return;
-                }
-
-                if (dataGridView1.SelectedRows.Count == 0)
-                {
-                    MessageBox.Show("Выберите гостя для бронирования!");
-                    return;
-                }
-
-                DateTime startDate = monthCalendar1.SelectionStart;
-                DateTime endDate = monthCalendar1.SelectionEnd;
-                int guestId = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells["id"].Value);
-
-                // 2. Получаем ID выбранных услуг по их названиям
-                List<int> selectedServices = new List<int>();
-                using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
-                {
-                    connection.Open();
-
-                    foreach (string serviceName in checkedListBoxSelectServicesChast.CheckedItems)
-                    {
-                        string query = "SELECT id FROM services WHERE service_name = @serviceName";
-                        using (var command = new NpgsqlCommand(query, connection))
-                        {
-                            command.Parameters.AddWithValue("@serviceName", serviceName);
-                            object result = command.ExecuteScalar();
-                            if (result != null)
-                            {
-                                selectedServices.Add(Convert.ToInt32(result));
-                            }
-                        }
-                    }
-                }
-
-                // 3. Создаем бронирование
-                using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
-                {
-                    connection.Open();
-
-                    using (var transaction = connection.BeginTransaction())
-                    {
-                        try
-                        {
-                            int roomNumber = Convert.ToInt32(dataGridViewRoomsChast.SelectedRows[0].Cells["room_number"].Value);
-
-                            // Проверка доступности номера
-                            string checkQuery = @"
-                        SELECT COUNT(*) FROM bookings 
-                        WHERE room_number = @roomNumber 
-                        AND (start_date <= @endDate AND end_date >= @startDate)";
-
-                            using (var checkCommand = new NpgsqlCommand(checkQuery, connection, transaction))
-                            {
-                                checkCommand.Parameters.AddWithValue("@roomNumber", roomNumber);
-                                checkCommand.Parameters.AddWithValue("@startDate", startDate);
-                                checkCommand.Parameters.AddWithValue("@endDate", endDate);
-
-                                if ((long)checkCommand.ExecuteScalar() > 0)
-                                {
-                                    MessageBox.Show($"Номер {roomNumber} уже забронирован на выбранные даты!");
-                                    return;
-                                }
-                            }
-
-                            // Получаем цену номера
-                            decimal roomPricePerDay = 0;
-                            string priceQuery = "SELECT price_per_day FROM rooms WHERE room_number = @roomNumber";
-                            using (var priceCommand = new NpgsqlCommand(priceQuery, connection, transaction))
-                            {
-                                priceCommand.Parameters.AddWithValue("@roomNumber", roomNumber);
-                                object priceResult = priceCommand.ExecuteScalar();
-                                if (priceResult != null)
-                                {
-                                    roomPricePerDay = Convert.ToDecimal(priceResult);
-                                }
-                            }
-
-                            // Получаем сумму стоимости услуг в сутки
-                            decimal servicesPerDayTotal = 0;
-                            if (selectedServices.Any())
-                            {
-                                string serviceQuery = "SELECT price FROM services WHERE id = ANY(@ids)";
-                                using (var serviceCommand = new NpgsqlCommand(serviceQuery, connection, transaction))
-                                {
-                                    serviceCommand.Parameters.AddWithValue("@ids", selectedServices.ToArray());
-                                    using (var reader = serviceCommand.ExecuteReader())
-                                    {
-                                        while (reader.Read())
-                                        {
-                                            servicesPerDayTotal += reader.GetDecimal(0);
-                                        }
-                                    }
-                                }
-                            }
-
-                            int days = (endDate - startDate).Days + 1;
-                            decimal totalPrice = (roomPricePerDay + servicesPerDayTotal) * days;
-
-                            // Создание бронирования
-                            string insertQuery = @"
-                        INSERT INTO bookings 
-                        (room_number, start_date, end_date, guest_id, services, total_price) 
-                        VALUES 
-                        (@roomNumber, @startDate, @endDate, @guestId, @services, @totalPrice)";
-
-                            using (var insertCommand = new NpgsqlCommand(insertQuery, connection, transaction))
-                            {
-                                insertCommand.Parameters.AddWithValue("@roomNumber", roomNumber);
-                                insertCommand.Parameters.AddWithValue("@startDate", startDate);
-                                insertCommand.Parameters.AddWithValue("@endDate", endDate);
-                                insertCommand.Parameters.AddWithValue("@guestId", guestId);
-                                insertCommand.Parameters.AddWithValue("@services", selectedServices.Any() ? selectedServices.ToArray() : Array.Empty<int>());
-                                insertCommand.Parameters.AddWithValue("@totalPrice", totalPrice);
-
-                                insertCommand.ExecuteNonQuery();
-                            }
-
-                            transaction.Commit();
-                            MessageBox.Show("Бронирование успешно создано!");
-                        }
-                        catch (Exception ex)
-                        {
-                            transaction.Rollback();
-                            MessageBox.Show($"Ошибка при бронировании: {ex.Message}");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}");
-            }
-        }
-
-        private void label5_Click_1(object sender, EventArgs e)
+        private void tabPage2_Click(object sender, EventArgs e)
         {
 
         }

@@ -1,88 +1,96 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
+using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace гостиница
 {
     public partial class Form5 : Form
     {
-        private readonly Database db;
+        private static readonly HttpClient client = new HttpClient();
+        private const string apiBaseUrl = "https://localhost:7029/api";
+
         public Form5()
         {
             InitializeComponent();
-            db = new Database("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root");
         }
 
-        private void add_organization_Click(object sender, EventArgs e)
+        private async void add_organization_Click(object sender, EventArgs e)
         {
             try
             {
-                // Получаем данные из текстовых полей
                 string fullName = full_name_organization.Text.Trim();
                 string phone = number_phone.Text.Trim();
                 string discount = sale.Text.Trim();
 
-                // Проверяем, что обязательные поля заполнены
                 if (string.IsNullOrEmpty(fullName))
                 {
                     MessageBox.Show("Пожалуйста, введите наименование организации");
-                    full_name_organization.Focus(); // Устанавливаем фокус на поле
+                    full_name_organization.Focus();
                     return;
                 }
 
-                // Валидация номера телефона
-                if (string.IsNullOrEmpty(phone) || !System.Text.RegularExpressions.Regex.IsMatch(phone, @"^\+?[0-9\s\-\(\)]{7,}$"))
+                if (string.IsNullOrEmpty(phone) || !Regex.IsMatch(phone, @"^\+?[0-9\s\-\(\)]{7,}$"))
                 {
                     MessageBox.Show("Пожалуйста, введите корректный номер телефона");
                     number_phone.Focus();
                     return;
                 }
 
-                // Валидация скидки
-                if (!string.IsNullOrEmpty(discount) && !discount.EndsWith("%") && discount != "None")
+                if (!string.IsNullOrEmpty(discount) && !discount.EndsWith("%") && discount.ToLower() != "none")
                 {
                     MessageBox.Show("Скидка должна быть в формате 'X%' или 'None'");
                     sale.Focus();
                     return;
                 }
 
-                // Если скидка не указана, устанавливаем значение по умолчанию
                 if (string.IsNullOrEmpty(discount))
                 {
                     discount = "None";
                 }
 
-                // Добавляем гостя в базу данных
-                bool success = db.AddOrganization(fullName, phone, discount);
-
-                if (success)
+                var organization = new Guest
                 {
-                    MessageBox.Show("Гость успешно добавлен!");
+                    FullNameOrOrganization = fullName,
+                    Phone = phone,
+                    Discount = discount,
+                    IsOrganization = true
+                };
 
-                    // Очищаем поля после успешного добавления
+                var json = JsonSerializer.Serialize(organization);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync($"{apiBaseUrl}/Guests", content);
+                if (response.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Организация успешно добавлена!");
                     full_name_organization.Text = "";
                     number_phone.Text = "";
                     sale.Text = "";
-
-                    // Закрываем форму после успешного добавления
                     this.DialogResult = DialogResult.OK;
                     this.Close();
                 }
                 else
                 {
-                    MessageBox.Show("Не удалось добавить организацию");
+                    string error = await response.Content.ReadAsStringAsync();
+                    MessageBox.Show($"Ошибка при добавлении: {response.StatusCode}\\n{error}");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при добавлении организации: {ex.Message}");
+                MessageBox.Show($"Ошибка: {ex.Message}");
             }
+        }
+
+        public class Guest
+        {
+            public string FullNameOrOrganization { get; set; }
+            public string Phone { get; set; }
+            public string Discount { get; set; }
+            public bool IsOrganization { get; set; }
         }
     }
 }
+

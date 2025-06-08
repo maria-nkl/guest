@@ -1,11 +1,8 @@
-﻿using Npgsql;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -13,74 +10,103 @@ namespace гостиница
 {
     public partial class Form7 : Form
     {
+        private static readonly HttpClient client = new HttpClient();
+        private const string apiBaseUrl = "https://localhost:7029/api"; // замените на ваш адрес API
+
         public Form7()
         {
             InitializeComponent();
         }
 
+        private async void Form7_Load(object sender, EventArgs e)
+        {
+            await LoadAndDisplayBookings();
+        }
+
+        private async Task LoadAndDisplayBookings()
+        {
+            try
+            {
+                var response = await client.GetAsync($"{apiBaseUrl}/bookings");
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStringAsync();
+                var bookings = JsonSerializer.Deserialize<List<BookingDto>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                DisplayBookings(bookings);
+                UpdateStatistics(bookings);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при загрузке бронирований: {ex.Message}");
+            }
+        }
+
+        private void DisplayBookings(List<BookingDto> bookings)
+        {
+            var table = new DataTable();
+            table.Columns.Add("Номер комнаты");
+            table.Columns.Add("Дата начала");
+            table.Columns.Add("Дата окончания");
+            table.Columns.Add("Гость");
+            table.Columns.Add("Услуги");
+            table.Columns.Add("Итоговая цена");
+
+            foreach (var booking in bookings)
+            {
+                table.Rows.Add(
+                    booking.RoomNumber,
+                    booking.StartDate.ToShortDateString(),
+                    booking.EndDate.ToShortDateString(),
+                    booking.GuestName,
+                    string.Join(", ", booking.Services ?? new List<int>()),
+                    booking.TotalPrice
+                );
+            }
+
+            dataGridViewBookings.DataSource = table;
+        }
+
+        private void UpdateStatistics(List<BookingDto> bookings)
+        {
+            int total = bookings.Count;
+            int current = 0;
+            int upcoming = 0;
+            int past = 0; // добавляем счётчик прошедших бронирований
+            DateTime today = DateTime.Today;
+
+            foreach (var booking in bookings)
+            {
+                if (today >= booking.StartDate && today <= booking.EndDate)
+                    current++;
+                else if (booking.StartDate > today)
+                    upcoming++;
+                else if (booking.EndDate < today)
+                    past++;
+            }
+
+            labelStatus.Text = $"📋 Всего бронирований: {total}\n" +
+                               $"🟢 Текущих: {current}\n" +
+                               $"🕓 Будущих: {upcoming}\n" +
+                               $"✔️ Прошедших: {past}";
+        }
+
+        public class BookingDto
+        {
+            public int RoomNumber { get; set; }
+            public DateTime StartDate { get; set; }
+            public DateTime EndDate { get; set; }
+            public string GuestName { get; set; }
+            public List<int> Services { get; set; }
+            public decimal TotalPrice { get; set; }
+        }
+
         private void labelStatus_Click(object sender, EventArgs e)
         {
 
-        }
-
-        private void Form7_Load(object sender, EventArgs e)
-        {
-            LoadBookings();
-            UpdateStatistics();
-        }
-
-        private void LoadBookings()
-        {
-            using (var conn = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
-            {
-                conn.Open();
-
-                string query = @"
-                    SELECT 
-                        b.room_number, 
-                        b.start_date, 
-                        b.end_date, 
-                        g.full_name_or_organization AS guest_name,
-                        b.services,
-                        b.total_price
-                    FROM bookings b
-                    JOIN guests g ON b.guest_id = g.id
-                    ORDER BY b.start_date DESC";
-
-                var adapter = new NpgsqlDataAdapter(query, conn);
-                var table = new DataTable();
-                adapter.Fill(table);
-                dataGridViewBookings.DataSource = table;
-            }
-        }
-
-        private void UpdateStatistics()
-        {
-            using (var conn = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
-            {
-                conn.Open();
-
-                int total = 0;
-                int current = 0;
-                int upcoming = 0;
-
-                string totalQuery = "SELECT COUNT(*) FROM bookings";
-                string currentQuery = "SELECT COUNT(*) FROM bookings WHERE CURRENT_DATE BETWEEN start_date AND end_date";
-                string futureQuery = "SELECT COUNT(*) FROM bookings WHERE start_date > CURRENT_DATE";
-
-                using (var cmd = new NpgsqlCommand(totalQuery, conn))
-                    total = Convert.ToInt32(cmd.ExecuteScalar());
-
-                using (var cmd = new NpgsqlCommand(currentQuery, conn))
-                    current = Convert.ToInt32(cmd.ExecuteScalar());
-
-                using (var cmd = new NpgsqlCommand(futureQuery, conn))
-                    upcoming = Convert.ToInt32(cmd.ExecuteScalar());
-
-                labelStatus.Text = $"📋 Всего бронирований: {total}\n" +
-                                  $"🟢 Текущих: {current}\n" +
-                                  $"🕓 Будущих: {upcoming}";
-            }
         }
     }
 }

@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -13,37 +9,47 @@ namespace гостиница
     public partial class Form2 : Form
     {
 
+        private void Form2_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        // Событие для изменения цвета панели (чтобы сообщать в Form1)
         public event Action<Color> PanelColorChanged;
 
-        // Событие, которое срабатывает при нажатии кнопки
-        public Form2(string labelText, string guestName, string guestPhone, string numberFloor,
+        // Функции для взаимодействия с API, которые передадим из Form1
+        private readonly Func<int, Task<string>> _getRequestDetailsAsync;
+        private readonly Func<int, string, Task<bool>> _updateRequestDetailsAsync;
+        private readonly Func<int, Task<bool>> _clearRequestDetailsAsync;
+
+        private readonly int _roomNumber;
+
+        public Form2(
+            string labelText, string guestName, string guestPhone, string numberFloor,
             string capacity, string category, string startDate, string endDate,
-            List<string> activeServices)
+            List<string> activeServices,
+            Func<int, Task<string>> getRequestDetailsAsync,
+            Func<int, string, Task<bool>> updateRequestDetailsAsync,
+            Func<int, Task<bool>> clearRequestDetailsAsync
+        )
         {
             InitializeComponent();
 
-            // Убедитесь, что все элементы инициализированы
-            if (number == null || floor == null || kolvo_mest == null || room_category == null ||
-                FIO == null || phone == null || data_start == null || data_end == null ||
-                checkedListBoxServices == null)
-            {
-                MessageBox.Show("Ошибка инициализации элементов формы");
-                return;
-            }
+            // Сохраняем функции для вызова API
+            _getRequestDetailsAsync = getRequestDetailsAsync ?? throw new ArgumentNullException(nameof(getRequestDetailsAsync));
+            _updateRequestDetailsAsync = updateRequestDetailsAsync ?? throw new ArgumentNullException(nameof(updateRequestDetailsAsync));
+            _clearRequestDetailsAsync = clearRequestDetailsAsync ?? throw new ArgumentNullException(nameof(clearRequestDetailsAsync));
 
-            // Основная информация
+            // Инициализация UI
             number.Text = labelText ?? "Нет данных";
             floor.Text = numberFloor ?? "Нет данных";
             FIO.Text = guestName ?? "Номер свободен";
             phone.Text = guestPhone ?? "-";
-
-            // Дополнительная информация о номере
             kolvo_mest.Text = capacity ?? "Нет данных";
             room_category.Text = category ?? "Нет данных";
             data_start.Text = startDate ?? "-";
             data_end.Text = endDate ?? "-";
 
-            // Заполняем услуги
             checkedListBoxServices.Items.Clear();
             if (activeServices != null)
             {
@@ -52,59 +58,48 @@ namespace гостиница
                 checkedListBoxServices.Items.Add("Уборка", activeServices.Contains("Уборка"));
                 checkedListBoxServices.Items.Add("Развлечения", activeServices.Contains("Развлечения"));
             }
+
+            if (!int.TryParse(labelText, out _roomNumber))
+            {
+                MessageBox.Show("Некорректный номер комнаты");
+                this.Close();
+            }
+
+            // Асинхронно загрузим детали заявки
+            LoadRequestDetailsAsync();
         }
 
-        private void Form2_Load(object sender, EventArgs e)
+        private async void LoadRequestDetailsAsync()
         {
-            if (!int.TryParse(number.Text, out int roomNumber))
-                return;
-
-            using (var connection = new Npgsql.NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
+            try
             {
-                connection.Open();
-                string query = "SELECT request_details FROM rooms WHERE room_number = @roomNumber";
-
-                using (var cmd = new Npgsql.NpgsqlCommand(query, connection))
+                string requestDetails = await _getRequestDetailsAsync(_roomNumber);
+                if (!string.IsNullOrEmpty(requestDetails))
                 {
-                    cmd.Parameters.AddWithValue("@roomNumber", roomNumber);
-                    object result = cmd.ExecuteScalar();
+                    Text_task.Text = requestDetails;
+                    Text_task.Enabled = false;
+                    task.Enabled = false;
+                    completed.Enabled = true;
 
-                    if (result != null && !string.IsNullOrWhiteSpace(result.ToString()))
-                    {
-                        // Задание уже есть
-                        Text_task.Text = result.ToString();
-                        Text_task.Enabled = false;
-                        task.Enabled = false;
-                        completed.Enabled = true;
-
-                        // Сообщаем в Form1, что нужна красная подсветка
-                        PanelColorChanged?.Invoke(Color.Red);
-                    }
-                    else
-                    {
-                        // Задания нет
-                        Text_task.Text = "";
-                        Text_task.Enabled = true;
-                        task.Enabled = true;
-                        completed.Enabled = false;
-
-                        PanelColorChanged?.Invoke(SystemColors.ButtonShadow);
-                    }
+                    PanelColorChanged?.Invoke(Color.Red);
                 }
+                else
+                {
+                    Text_task.Text = "";
+                    Text_task.Enabled = true;
+                    task.Enabled = true;
+                    completed.Enabled = false;
+
+                    PanelColorChanged?.Invoke(SystemColors.ButtonShadow);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка загрузки заявки: " + ex.Message);
             }
         }
 
-        private void label4_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label10_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void task_Click(object sender, EventArgs e)
+        private async void task_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(Text_task.Text))
             {
@@ -112,68 +107,46 @@ namespace гостиница
                 return;
             }
 
-            if (!int.TryParse(number.Text, out int roomNumber))
-            {
-                MessageBox.Show("Некорректный номер комнаты.");
-                return;
-            }
-
             try
             {
-                using (var connection = new Npgsql.NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
+                bool success = await _updateRequestDetailsAsync(_roomNumber, Text_task.Text);
+                if (success)
                 {
-                    connection.Open();
-                    string updateQuery = "UPDATE rooms SET request_details = @details WHERE room_number = @roomNumber";
-
-                    using (var cmd = new Npgsql.NpgsqlCommand(updateQuery, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@details", Text_task.Text);
-                        cmd.Parameters.AddWithValue("@roomNumber", roomNumber);
-                        cmd.ExecuteNonQuery();
-                    }
+                    completed.Enabled = true;
+                    task.Enabled = false;
+                    Text_task.Enabled = false;
+                    PanelColorChanged?.Invoke(Color.Red);
+                    MessageBox.Show("Задание сохранено.");
                 }
-
-                completed.Enabled = true;
-                task.Enabled = false;
-                Text_task.Enabled = false;
-                PanelColorChanged?.Invoke(Color.Red);
-                MessageBox.Show("Задание сохранено.");
+                else
+                {
+                    MessageBox.Show("Не удалось сохранить задание.");
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Ошибка при сохранении задания: " + ex.Message);
             }
-
         }
 
-        private void completed_Click(object sender, EventArgs e)
+        private async void completed_Click(object sender, EventArgs e)
         {
-            if (!int.TryParse(number.Text, out int roomNumber))
-            {
-                MessageBox.Show("Некорректный номер комнаты.");
-                return;
-            }
-
             try
             {
-                using (var connection = new Npgsql.NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
+                bool success = await _clearRequestDetailsAsync(_roomNumber);
+                if (success)
                 {
-                    connection.Open();
-                    string clearQuery = "UPDATE rooms SET request_details = NULL WHERE room_number = @roomNumber";
-
-                    using (var cmd = new Npgsql.NpgsqlCommand(clearQuery, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@roomNumber", roomNumber);
-                        cmd.ExecuteNonQuery();
-                    }
+                    completed.Enabled = false;
+                    task.Enabled = true;
+                    Text_task.Enabled = true;
+                    Text_task.Text = string.Empty;
+                    PanelColorChanged?.Invoke(SystemColors.ButtonShadow);
+                    MessageBox.Show("Задание завершено.");
                 }
-
-                completed.Enabled = false;
-                task.Enabled = true;
-                Text_task.Enabled = true;
-                Text_task.Text = string.Empty;
-                PanelColorChanged?.Invoke(SystemColors.ButtonShadow);
-                MessageBox.Show("Задание завершено.");
+                else
+                {
+                    MessageBox.Show("Не удалось удалить задание.");
+                }
             }
             catch (Exception ex)
             {
@@ -182,6 +155,15 @@ namespace гостиница
         }
 
         private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label10_Click(object sender, EventArgs e)
         {
 
         }
