@@ -81,7 +81,20 @@ namespace гостиница
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            labelUserInfo.Text = $"Пользователь: {SessionUser.FullName}\nРоль: {SessionUser.RoleName}";
+            HighlightPanelsWithRequests();
 
+            // 1. Обслуживающий персонал не может нажимать на кнопку1
+            if (SessionUser.RoleName == "Обслуживающий персонал")
+            {
+                button1.Enabled = false;
+            }
+
+            // 2. Только администратор может нажимать на кнопку2
+            if (SessionUser.RoleName != "Администратор")
+            {
+                button2.Enabled = false;
+            }
         }
 
         private void panel5_Paint(object sender, PaintEventArgs e)
@@ -104,6 +117,47 @@ namespace гостиница
 
             // Или, если хотите показать немодальное окно (можно переключаться между формами):
             // form3.Show();
+        }
+
+        private void HighlightPanelsWithRequests()
+        {
+            using (var connection = new Npgsql.NpgsqlConnection("Host=localhost;Database=hotel;Username=postgres;Password=root"))
+            {
+                connection.Open();
+
+                foreach (Control control in this.Controls)
+                {
+                    if (control is Panel panel)
+                    {
+                        // Предполагаем, что Label внутри панели содержит номер комнаты
+                        Label label = panel.Controls.OfType<Label>().FirstOrDefault();
+                        if (label != null && int.TryParse(label.Text, out int roomNumber))
+                        {
+                            string query = "SELECT request_details FROM rooms WHERE room_number = @roomNumber";
+                            using (var cmd = new Npgsql.NpgsqlCommand(query, connection))
+                            {
+                                cmd.Parameters.AddWithValue("@roomNumber", roomNumber);
+                                object result = cmd.ExecuteScalar();
+
+                                if (result != null && !string.IsNullOrWhiteSpace(result.ToString()))
+                                {
+                                    panel.BackColor = Color.Red;
+                                }
+                                else
+                                {
+                                    panel.BackColor = SystemColors.ButtonShadow; ; // или другой стандартный цвет
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Form7 form7 = new Form7();
+            form7.ShowDialog();
         }
     }
 }

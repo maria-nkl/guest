@@ -84,7 +84,8 @@ namespace гостиница
                             floor INTEGER NOT NULL,
                             category TEXT NOT NULL,
                             capacity INTEGER NOT NULL,
-                            price_per_day DECIMAL(10,2) NOT NULL
+                            price_per_day DECIMAL(10,2) NOT NULL,
+                            request_details TEXT DEFAULT ''
                         )", connection))
                     {
                         command.ExecuteNonQuery();
@@ -110,8 +111,7 @@ namespace гостиница
                             end_date DATE NOT NULL,
                             guest_id INTEGER REFERENCES guests(id),
                             services INTEGER[] DEFAULT ARRAY[]::INTEGER[],
-                            price_per_day DECIMAL(10,2) DEFAULT 0.00,
-                            request_details TEXT DEFAULT ''
+                            price_per_day DECIMAL(10,2) DEFAULT 0.00
                         )", connection))
                     {
                         command.ExecuteNonQuery();

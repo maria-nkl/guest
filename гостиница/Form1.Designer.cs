@@ -59,6 +59,8 @@
             this.panel15 = new System.Windows.Forms.Panel();
             this.label15 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
+            this.labelUserInfo = new System.Windows.Forms.Label();
+            this.button2 = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -81,7 +83,7 @@
             this.panel1.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel1.Controls.Add(this.label1);
-            this.panel1.Location = new System.Drawing.Point(49, 40);
+            this.panel1.Location = new System.Drawing.Point(53, 70);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(124, 60);
             this.panel1.TabIndex = 0;
@@ -100,7 +102,7 @@
             this.panel2.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel2.Controls.Add(this.label2);
-            this.panel2.Location = new System.Drawing.Point(188, 40);
+            this.panel2.Location = new System.Drawing.Point(192, 70);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(124, 60);
             this.panel2.TabIndex = 1;
@@ -119,7 +121,7 @@
             this.panel3.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.panel3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel3.Controls.Add(this.label3);
-            this.panel3.Location = new System.Drawing.Point(327, 40);
+            this.panel3.Location = new System.Drawing.Point(331, 70);
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(124, 60);
             this.panel3.TabIndex = 2;
@@ -138,7 +140,7 @@
             this.panel4.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.panel4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel4.Controls.Add(this.label4);
-            this.panel4.Location = new System.Drawing.Point(466, 40);
+            this.panel4.Location = new System.Drawing.Point(470, 70);
             this.panel4.Name = "panel4";
             this.panel4.Size = new System.Drawing.Size(124, 60);
             this.panel4.TabIndex = 2;
@@ -157,7 +159,7 @@
             this.panel5.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.panel5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel5.Controls.Add(this.label5);
-            this.panel5.Location = new System.Drawing.Point(606, 40);
+            this.panel5.Location = new System.Drawing.Point(610, 70);
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(124, 60);
             this.panel5.TabIndex = 3;
@@ -177,7 +179,7 @@
             this.panel6.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.panel6.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel6.Controls.Add(this.label6);
-            this.panel6.Location = new System.Drawing.Point(606, 106);
+            this.panel6.Location = new System.Drawing.Point(610, 136);
             this.panel6.Name = "panel6";
             this.panel6.Size = new System.Drawing.Size(124, 60);
             this.panel6.TabIndex = 8;
@@ -196,7 +198,7 @@
             this.panel7.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.panel7.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel7.Controls.Add(this.label7);
-            this.panel7.Location = new System.Drawing.Point(327, 106);
+            this.panel7.Location = new System.Drawing.Point(331, 136);
             this.panel7.Name = "panel7";
             this.panel7.Size = new System.Drawing.Size(124, 60);
             this.panel7.TabIndex = 6;
@@ -216,7 +218,7 @@
             this.panel8.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.panel8.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel8.Controls.Add(this.label8);
-            this.panel8.Location = new System.Drawing.Point(466, 106);
+            this.panel8.Location = new System.Drawing.Point(470, 136);
             this.panel8.Name = "panel8";
             this.panel8.Size = new System.Drawing.Size(124, 60);
             this.panel8.TabIndex = 7;
@@ -235,7 +237,7 @@
             this.panel9.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.panel9.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel9.Controls.Add(this.label9);
-            this.panel9.Location = new System.Drawing.Point(188, 106);
+            this.panel9.Location = new System.Drawing.Point(192, 136);
             this.panel9.Name = "panel9";
             this.panel9.Size = new System.Drawing.Size(124, 60);
             this.panel9.TabIndex = 5;
@@ -254,7 +256,7 @@
             this.panel10.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.panel10.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel10.Controls.Add(this.label10);
-            this.panel10.Location = new System.Drawing.Point(49, 106);
+            this.panel10.Location = new System.Drawing.Point(53, 136);
             this.panel10.Name = "panel10";
             this.panel10.Size = new System.Drawing.Size(124, 60);
             this.panel10.TabIndex = 4;
@@ -273,7 +275,7 @@
             this.panel11.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.panel11.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel11.Controls.Add(this.label11);
-            this.panel11.Location = new System.Drawing.Point(606, 172);
+            this.panel11.Location = new System.Drawing.Point(610, 202);
             this.panel11.Name = "panel11";
             this.panel11.Size = new System.Drawing.Size(124, 60);
             this.panel11.TabIndex = 13;
@@ -292,7 +294,7 @@
             this.panel12.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.panel12.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel12.Controls.Add(this.label12);
-            this.panel12.Location = new System.Drawing.Point(327, 172);
+            this.panel12.Location = new System.Drawing.Point(331, 202);
             this.panel12.Name = "panel12";
             this.panel12.Size = new System.Drawing.Size(124, 60);
             this.panel12.TabIndex = 11;
@@ -311,7 +313,7 @@
             this.panel13.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.panel13.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel13.Controls.Add(this.label13);
-            this.panel13.Location = new System.Drawing.Point(466, 172);
+            this.panel13.Location = new System.Drawing.Point(470, 202);
             this.panel13.Name = "panel13";
             this.panel13.Size = new System.Drawing.Size(124, 60);
             this.panel13.TabIndex = 12;
@@ -330,7 +332,7 @@
             this.panel14.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.panel14.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel14.Controls.Add(this.label14);
-            this.panel14.Location = new System.Drawing.Point(188, 172);
+            this.panel14.Location = new System.Drawing.Point(192, 202);
             this.panel14.Name = "panel14";
             this.panel14.Size = new System.Drawing.Size(124, 60);
             this.panel14.TabIndex = 10;
@@ -349,7 +351,7 @@
             this.panel15.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.panel15.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel15.Controls.Add(this.label15);
-            this.panel15.Location = new System.Drawing.Point(49, 172);
+            this.panel15.Location = new System.Drawing.Point(53, 202);
             this.panel15.Name = "panel15";
             this.panel15.Size = new System.Drawing.Size(124, 60);
             this.panel15.TabIndex = 9;
@@ -365,20 +367,42 @@
             // 
             // button1
             // 
-            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.button1.Location = new System.Drawing.Point(554, 277);
+            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.button1.Location = new System.Drawing.Point(512, 297);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(176, 48);
+            this.button1.Size = new System.Drawing.Size(222, 61);
             this.button1.TabIndex = 14;
             this.button1.Text = "Добавить бронь";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // labelUserInfo
+            // 
+            this.labelUserInfo.AutoSize = true;
+            this.labelUserInfo.Location = new System.Drawing.Point(50, 26);
+            this.labelUserInfo.Name = "labelUserInfo";
+            this.labelUserInfo.Size = new System.Drawing.Size(51, 16);
+            this.labelUserInfo.TabIndex = 15;
+            this.labelUserInfo.Text = "label16";
+            // 
+            // button2
+            // 
+            this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.button2.Location = new System.Drawing.Point(53, 297);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(222, 61);
+            this.button2.TabIndex = 16;
+            this.button2.Text = "Отчёт по бронированиям";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.button2);
+            this.Controls.Add(this.labelUserInfo);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.panel11);
             this.Controls.Add(this.panel12);
@@ -429,6 +453,7 @@
             this.panel15.ResumeLayout(false);
             this.panel15.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -465,6 +490,8 @@
         private System.Windows.Forms.Panel panel15;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label labelUserInfo;
+        private System.Windows.Forms.Button button2;
     }
 }
 

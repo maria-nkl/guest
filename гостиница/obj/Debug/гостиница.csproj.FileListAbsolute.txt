@@ -33,3 +33,5 @@ C:\Users\nikol\VS project\гостиница\гостиница\obj\Debug\гос
 C:\Users\nikol\VS project\гостиница\гостиница\obj\Debug\гостиница.Form3.resources
 C:\Users\nikol\VS project\гостиница\гостиница\obj\Debug\гостиница.Form4.resources
 C:\Users\nikol\VS project\гостиница\гостиница\obj\Debug\гостиница.Form5.resources
+C:\Users\nikol\VS project\гостиница\гостиница\obj\Debug\гостиница.Form6.resources
+C:\Users\nikol\VS project\гостиница\гостиница\obj\Debug\гостиница.Form7.resources

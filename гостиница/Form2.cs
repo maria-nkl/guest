@@ -56,7 +56,42 @@ namespace гостиница
 
         private void Form2_Load(object sender, EventArgs e)
         {
+            if (!int.TryParse(number.Text, out int roomNumber))
+                return;
 
+            using (var connection = new Npgsql.NpgsqlConnection("Host=localhost;Database=hotel;Username=postgres;Password=root"))
+            {
+                connection.Open();
+                string query = "SELECT request_details FROM rooms WHERE room_number = @roomNumber";
+
+                using (var cmd = new Npgsql.NpgsqlCommand(query, connection))
+                {
+                    cmd.Parameters.AddWithValue("@roomNumber", roomNumber);
+                    object result = cmd.ExecuteScalar();
+
+                    if (result != null && !string.IsNullOrWhiteSpace(result.ToString()))
+                    {
+                        // Задание уже есть
+                        Text_task.Text = result.ToString();
+                        Text_task.Enabled = false;
+                        task.Enabled = false;
+                        completed.Enabled = true;
+
+                        // Сообщаем в Form1, что нужна красная подсветка
+                        PanelColorChanged?.Invoke(Color.Red);
+                    }
+                    else
+                    {
+                        // Задания нет
+                        Text_task.Text = "";
+                        Text_task.Enabled = true;
+                        task.Enabled = true;
+                        completed.Enabled = false;
+
+                        PanelColorChanged?.Invoke(SystemColors.ButtonShadow);
+                    }
+                }
+            }
         }
 
         private void label4_Click(object sender, EventArgs e)
@@ -71,20 +106,79 @@ namespace гостиница
 
         private void task_Click(object sender, EventArgs e)
         {
-            completed.Enabled = true;
-            task.Enabled = false;
-            Text_task.Enabled = false;
-            PanelColorChanged?.Invoke(Color.Red);
+            if (string.IsNullOrWhiteSpace(Text_task.Text))
+            {
+                MessageBox.Show("Введите текст задания.");
+                return;
+            }
+
+            if (!int.TryParse(number.Text, out int roomNumber))
+            {
+                MessageBox.Show("Некорректный номер комнаты.");
+                return;
+            }
+
+            try
+            {
+                using (var connection = new Npgsql.NpgsqlConnection("Host=localhost;Database=hotel;Username=postgres;Password=root"))
+                {
+                    connection.Open();
+                    string updateQuery = "UPDATE rooms SET request_details = @details WHERE room_number = @roomNumber";
+
+                    using (var cmd = new Npgsql.NpgsqlCommand(updateQuery, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@details", Text_task.Text);
+                        cmd.Parameters.AddWithValue("@roomNumber", roomNumber);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                completed.Enabled = true;
+                task.Enabled = false;
+                Text_task.Enabled = false;
+                PanelColorChanged?.Invoke(Color.Red);
+                MessageBox.Show("Задание сохранено.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при сохранении задания: " + ex.Message);
+            }
 
         }
 
         private void completed_Click(object sender, EventArgs e)
         {
-            completed.Enabled = false;
-            task.Enabled = true;
-            Text_task.Enabled = true;
-            Text_task.Text = string.Empty;
-            PanelColorChanged?.Invoke(SystemColors.ButtonShadow);
+            if (!int.TryParse(number.Text, out int roomNumber))
+            {
+                MessageBox.Show("Некорректный номер комнаты.");
+                return;
+            }
+
+            try
+            {
+                using (var connection = new Npgsql.NpgsqlConnection("Host=localhost;Database=hotel;Username=postgres;Password=root"))
+                {
+                    connection.Open();
+                    string clearQuery = "UPDATE rooms SET request_details = NULL WHERE room_number = @roomNumber";
+
+                    using (var cmd = new Npgsql.NpgsqlCommand(clearQuery, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@roomNumber", roomNumber);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                completed.Enabled = false;
+                task.Enabled = true;
+                Text_task.Enabled = true;
+                Text_task.Text = string.Empty;
+                PanelColorChanged?.Invoke(SystemColors.ButtonShadow);
+                MessageBox.Show("Задание завершено.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при удалении задания: " + ex.Message);
+            }
         }
 
         private void label6_Click(object sender, EventArgs e)

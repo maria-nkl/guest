@@ -207,6 +207,7 @@
             // 
             // Text_task
             // 
+            this.Text_task.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.Text_task.Location = new System.Drawing.Point(27, 319);
             this.Text_task.Name = "Text_task";
             this.Text_task.Size = new System.Drawing.Size(720, 71);

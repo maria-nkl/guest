@@ -16,7 +16,11 @@ namespace гостиница
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Form6 loginForm = new Form6();
+                if (loginForm.ShowDialog() == DialogResult.OK)
+                {
+                    Application.Run(new Form1());
+                }
         }
     }
 }
