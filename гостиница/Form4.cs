@@ -17,7 +17,7 @@ namespace гостиница
         public Form4()
         {
             InitializeComponent();
-            db = new Database("Host=localhost;Database=hotel;Username=postgres;Password=root");
+            db = new Database("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root");
         }
 
         private void Form4_Load(object sender, EventArgs e)

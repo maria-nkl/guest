@@ -14,7 +14,7 @@ namespace гостиница
         public Form3()
         {
             InitializeComponent();
-            db = new Database("Host=localhost;Database=hotel;Username=postgres;Password=root");
+            db = new Database("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root");
             dataGridViewRoomsOrg.SelectionChanged += DataGridViewRoomsOrg_SelectionChanged;
         }
 
@@ -356,7 +356,7 @@ namespace гостиница
                 }
 
                 // Подключение к базе данных (используем Npgsql)
-                using (var connection = new NpgsqlConnection("Host=localhost;Database=hotel;Username=postgres;Password=root"))
+                using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
                 {
                     connection.Open();
 
@@ -440,7 +440,7 @@ namespace гостиница
                 DateTime endDate = monthCalendar2.SelectionEnd;
                 int requiredCapacity = (int)kolvoguestsOrg.Value;
 
-                using (var connection = new NpgsqlConnection("Host=localhost;Database=hotel;Username=postgres;Password=root"))
+                using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
                 {
                     connection.Open();
 
@@ -585,7 +585,7 @@ namespace гостиница
 
             string orgName = dataGridView2.SelectedRows[0].Cells["full_name"].Value?.ToString();
 
-            using (var connection = new NpgsqlConnection("Host=localhost;Database=hotel;Username=postgres;Password=root"))
+            using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
             {
                 connection.Open();
 
@@ -670,7 +670,7 @@ namespace гостиница
 
                 // 2. Получаем ID выбранных услуг по их названиям
                 List<int> selectedServices = new List<int>();
-                using (var connection = new NpgsqlConnection("Host=localhost;Database=hotel;Username=postgres;Password=root"))
+                using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
                 {
                     connection.Open();
 
@@ -690,7 +690,7 @@ namespace гостиница
                 }
 
                 // 3. Создаем бронирование для каждого номера
-                using (var connection = new NpgsqlConnection("Host=localhost;Database=hotel;Username=postgres;Password=root"))
+                using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
                 {
                     connection.Open();
 
@@ -838,7 +838,7 @@ namespace гостиница
 
                 // 2. Получаем ID выбранных услуг по их названиям
                 List<int> selectedServices = new List<int>();
-                using (var connection = new NpgsqlConnection("Host=localhost;Database=hotel;Username=postgres;Password=root"))
+                using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
                 {
                     connection.Open();
 
@@ -858,7 +858,7 @@ namespace гостиница
                 }
 
                 // 3. Создаем бронирование
-                using (var connection = new NpgsqlConnection("Host=localhost;Database=hotel;Username=postgres;Password=root"))
+                using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
                 {
                     connection.Open();
 

@@ -31,7 +31,7 @@ namespace гостиница
 
         private void LoadBookings()
         {
-            using (var conn = new NpgsqlConnection("Host=localhost;Database=hotel;Username=postgres;Password=root"))
+            using (var conn = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
             {
                 conn.Open();
 
@@ -56,7 +56,7 @@ namespace гостиница
 
         private void UpdateStatistics()
         {
-            using (var conn = new NpgsqlConnection("Host=localhost;Database=hotel;Username=postgres;Password=root"))
+            using (var conn = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
             {
                 conn.Open();
 

@@ -36,7 +36,7 @@ namespace гостиница
 
             try
             {
-                using (var connection = new NpgsqlConnection("Host=localhost;Database=hotel;Username=postgres;Password=root"))
+                using (var connection = new NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
                 {
                     connection.Open();
 

@@ -16,7 +16,7 @@ namespace гостиница
         public Form5()
         {
             InitializeComponent();
-            db = new Database("Host=localhost;Database=hotel;Username=postgres;Password=root");
+            db = new Database("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root");
         }
 
         private void add_organization_Click(object sender, EventArgs e)

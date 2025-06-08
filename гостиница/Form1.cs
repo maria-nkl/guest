@@ -17,7 +17,7 @@ namespace гостиница
         public Form1()
         {
             InitializeComponent();
-            db = new Database("Host=localhost;Database=hotel;Username=postgres;Password=root");
+            db = new Database("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root");
             SubscribePanels();
         }
 
@@ -121,7 +121,7 @@ namespace гостиница
 
         private void HighlightPanelsWithRequests()
         {
-            using (var connection = new Npgsql.NpgsqlConnection("Host=localhost;Database=hotel;Username=postgres;Password=root"))
+            using (var connection = new Npgsql.NpgsqlConnection("Host=46.160.139.91;Port=5432;Database=hotel;Username=postgres123;Password=root"))
             {
                 connection.Open();
 
