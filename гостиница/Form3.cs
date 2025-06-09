@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Net.Http;
@@ -8,11 +9,13 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static гостиница.Form3;
 
 namespace гостиница
 {
     public partial class Form3 : Form
     {
+
         private static readonly HttpClient client = new HttpClient();
         private const string apiBaseUrl = "https://localhost:7029/api"; // Замените на ваш URL API
 
@@ -20,6 +23,8 @@ namespace гостиница
         {
             InitializeComponent();
             dataGridViewRoomsOrg.SelectionChanged += DataGridViewRoomsOrg_SelectionChanged;
+            LoadAllServices();
+            ConfigureRoomGrids();
         }
 
         private async void Form3_Load(object sender, EventArgs e)
@@ -108,6 +113,64 @@ namespace гостиница
             });
 
             dataGridView2.SelectionChanged += DataGridView_SelectionChanged;
+        }
+
+        private void ConfigureRoomGrids()
+        {
+            // Общие настройки для обеих таблиц
+            Action<DataGridView> configureGrid = (grid) => {
+                grid.AutoGenerateColumns = false;
+                grid.ReadOnly = true;
+                grid.AllowUserToAddRows = false;
+                grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                grid.Columns.Clear();
+
+                // Общие столбцы с одинаковыми параметрами
+                grid.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "RoomNumber",
+                    HeaderText = "Номер",
+                    DataPropertyName = "RoomNumber",
+                    Width = 70
+                });
+
+                grid.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "Floor",
+                    HeaderText = "Этаж",
+                    DataPropertyName = "Floor",
+                    Width = 60
+                });
+
+                grid.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "Category",
+                    HeaderText = "Категория",
+                    DataPropertyName = "Category",
+                    Width = 120
+                });
+
+                grid.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "Capacity",
+                    HeaderText = "Вместимость",
+                    DataPropertyName = "Capacity",
+                    Width = 120
+                });
+
+                grid.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "PricePerDay",
+                    HeaderText = "Цена за день",
+                    DataPropertyName = "PricePerDay",
+                    Width = 100,
+                    DefaultCellStyle = new DataGridViewCellStyle { Format = "N2" }
+                });
+            };
+
+            // Применяем настройки к обеим таблицам
+            configureGrid(dataGridViewRoomsChast);
+            configureGrid(dataGridViewRoomsOrg);
         }
 
         private void DataGridView_SelectionChanged(object sender, EventArgs e)
@@ -299,8 +362,22 @@ namespace гостиница
 
                         var rooms = JsonSerializer.Deserialize<List<Room>>(json,
                             new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
                         dataGridViewRoomsChast.DataSource = rooms;
+
+                        DataTable result = new DataTable();
+                        result.Columns.Add("RoomNumber", typeof(int)).Caption = "Номер";
+                        result.Columns.Add("Floor", typeof(int)).Caption = "Этаж";
+                        result.Columns.Add("Category", typeof(string)).Caption = "Категория";
+                        result.Columns.Add("Capacity", typeof(int)).Caption = "Вместимость";
+                        result.Columns.Add("PricePerDay", typeof(decimal)).Caption = "Цена за день";
+
+                        foreach (var room in rooms)
+                        {
+                            result.Rows.Add(room.RoomNumber, room.Floor, room.Category, room.Capacity, room.PricePerDay);
+                        }
+
+                        dataGridViewRoomsChast.DataSource = result;
+
 
                         if (rooms.Count > 0)
                         {
@@ -363,6 +440,7 @@ namespace гостиница
                     string json = await response.Content.ReadAsStringAsync();
                     var allRooms = JsonSerializer.Deserialize<List<Room>>(json,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    dataGridViewRoomsOrg.DataSource = allRooms;
 
                     Console.WriteLine($"Получено номеров: {allRooms?.Count ?? 0}");
 
@@ -373,13 +451,19 @@ namespace гостиница
                         return;
                     }
 
-                    // Создаем DataTable для результатов
                     DataTable result = new DataTable();
-                    result.Columns.Add("RoomNumber", typeof(int));
-                    result.Columns.Add("Floor", typeof(int));
-                    result.Columns.Add("Category", typeof(string));
-                    result.Columns.Add("Capacity", typeof(int));
-                    result.Columns.Add("PricePerDay", typeof(decimal));
+                    result.Columns.Add("RoomNumber", typeof(int)).Caption = "Номер";
+                    result.Columns.Add("Floor", typeof(int)).Caption = "Этаж";
+                    result.Columns.Add("Category", typeof(string)).Caption = "Категория";
+                    result.Columns.Add("Capacity", typeof(int)).Caption = "Вместимость";
+                    result.Columns.Add("PricePerDay", typeof(decimal)).Caption = "Цена за день";
+
+                    foreach (var room in allRooms)
+                    {
+                        result.Rows.Add(room.RoomNumber, room.Floor, room.Category, room.Capacity, room.PricePerDay);
+                    }
+
+                    dataGridViewRoomsOrg.DataSource = result;
 
                     // Алгоритм подбора номеров
                     var selectedRooms = new List<Room>();
@@ -539,7 +623,7 @@ namespace гостиница
                         var services = JsonSerializer.Deserialize<List<Service>>(serviceJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                         if (services.Any())
                         {
-                            totalServiceCostPerDay += services.First().Price;
+                            totalServiceCostPerDay += services.First().price;
                         }
                     }
                 }
@@ -573,6 +657,31 @@ namespace гостиница
             UpdateSelectedRoomsLabel();
         }
 
+        private Dictionary<string, int> _serviceNameToId = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        private async Task LoadAllServices()
+        {
+            try
+            {
+                var response = await client.GetAsync($"{apiBaseUrl}/Services");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var services = JsonSerializer.Deserialize<List<Service>>(json);
+
+                    _serviceNameToId.Clear();
+                    foreach (var service in services)
+                    {
+                        _serviceNameToId[service.serviceName] = service.id;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка загрузки услуг: {ex.Message}");
+            }
+        }
+
         private async void buttonBookRoomsOrg_Click(object sender, EventArgs e)
         {
             try
@@ -596,17 +705,12 @@ namespace гостиница
                 List<int> selectedServices = new List<int>();
                 foreach (string serviceName in checkedListBoxSelectServicesOrg.CheckedItems)
                 {
-                    var getResponse = await client.GetAsync($"{apiBaseUrl}/Services?name={serviceName}");
-                    if (getResponse.IsSuccessStatusCode)
+                    if (_serviceNameToId.TryGetValue(serviceName, out int serviceId))
                     {
-                        string json = await getResponse.Content.ReadAsStringAsync();
-                        var services = JsonSerializer.Deserialize<List<Service>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                        if (services.Any())
-                        {
-                            selectedServices.Add(services.First().Id);
-                        }
+                        selectedServices.Add(serviceId);
                     }
                 }
+
 
                 var bookings = new List<BookingRequest>();
                 foreach (DataGridViewRow row in dataGridViewRoomsOrg.SelectedRows)
@@ -670,15 +774,9 @@ namespace гостиница
                 List<int> selectedServices = new List<int>();
                 foreach (string serviceName in checkedListBoxSelectServicesChast.CheckedItems)
                 {
-                    var getResponse = await client.GetAsync($"{apiBaseUrl}/Services?name={serviceName}");
-                    if (getResponse.IsSuccessStatusCode)
+                    if (_serviceNameToId.TryGetValue(serviceName, out int serviceId))
                     {
-                        string json = await getResponse.Content.ReadAsStringAsync();
-                        var services = JsonSerializer.Deserialize<List<Service>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                        if (services.Any())
-                        {
-                            selectedServices.Add(services.First().Id);
-                        }
+                        selectedServices.Add(serviceId);
                     }
                 }
 
@@ -733,9 +831,9 @@ namespace гостиница
 
         public class Service
         {
-            public int Id { get; set; }
-            public string Name { get; set; }
-            public decimal Price { get; set; }
+            public int id { get; set; }
+            public string serviceName { get; set; }
+            public decimal price { get; set; }
         }
 
         public class BookingRequest

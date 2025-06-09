@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -12,15 +13,39 @@ namespace гостиница
     {
         private static readonly HttpClient client = new HttpClient();
         private const string apiBaseUrl = "https://localhost:7029/api"; // замените на ваш адрес API
+        private Dictionary<int, string> serviceNames = new Dictionary<int, string>();
+
 
         public Form7()
         {
             InitializeComponent();
+            LoadServices();
+            LoadAndDisplayBookings();
         }
 
         private async void Form7_Load(object sender, EventArgs e)
         {
             await LoadAndDisplayBookings();
+        }
+        private async Task LoadServices()
+        {
+            try
+            {
+                var response = await client.GetAsync($"{apiBaseUrl}/services");
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStringAsync();
+                var services = JsonSerializer.Deserialize<List<ServiceDto>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                serviceNames = services.ToDictionary(s => s.id, s => s.serviceName);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при загрузке списка услуг: {ex.Message}");
+            }
         }
 
         private async Task LoadAndDisplayBookings()
@@ -57,17 +82,22 @@ namespace гостиница
 
             foreach (var booking in bookings)
             {
+                var serviceNamesList = booking.Services?
+                    .Select(id => serviceNames.TryGetValue(id, out var name) ? name : $"ID:{id}")
+                    .ToList();
+
                 table.Rows.Add(
                     booking.RoomNumber,
                     booking.StartDate.ToShortDateString(),
                     booking.EndDate.ToShortDateString(),
                     booking.GuestName,
-                    string.Join(", ", booking.Services ?? new List<int>()),
+                    string.Join(", ", serviceNamesList ?? new List<string>()),
                     booking.TotalPrice
                 );
             }
 
             dataGridViewBookings.DataSource = table;
+            dataGridViewBookings.Columns["Услуги"].Width = 200;
         }
 
         private void UpdateStatistics(List<BookingDto> bookings)
@@ -102,6 +132,11 @@ namespace гостиница
             public string GuestName { get; set; }
             public List<int> Services { get; set; }
             public decimal TotalPrice { get; set; }
+        }
+        public class ServiceDto
+        {
+            public int id { get; set; }
+            public string serviceName { get; set; }
         }
 
         private void labelStatus_Click(object sender, EventArgs e)

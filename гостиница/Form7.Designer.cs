@@ -52,14 +52,14 @@
             this.dataGridViewBookings.Name = "dataGridViewBookings";
             this.dataGridViewBookings.RowHeadersWidth = 51;
             this.dataGridViewBookings.RowTemplate.Height = 24;
-            this.dataGridViewBookings.Size = new System.Drawing.Size(768, 323);
+            this.dataGridViewBookings.Size = new System.Drawing.Size(963, 323);
             this.dataGridViewBookings.TabIndex = 1;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label1.Location = new System.Drawing.Point(287, 19);
+            this.label1.Location = new System.Drawing.Point(313, 19);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(334, 29);
             this.label1.TabIndex = 2;
@@ -69,7 +69,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(856, 545);
+            this.ClientSize = new System.Drawing.Size(1045, 545);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.dataGridViewBookings);
             this.Controls.Add(this.labelStatus);
