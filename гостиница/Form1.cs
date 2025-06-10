@@ -14,7 +14,7 @@ namespace гостиница
     public partial class Form1 : Form
     {
         private static readonly HttpClient client = new HttpClient();
-        private const string apiBaseUrl = "https://localhost:7029/api";
+        private const string apiBaseUrl = "http://localhost:5000/api";
 
         public Form1()
         {

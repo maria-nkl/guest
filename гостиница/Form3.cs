@@ -17,7 +17,7 @@ namespace гостиница
     {
 
         private static readonly HttpClient client = new HttpClient();
-        private const string apiBaseUrl = "https://localhost:7029/api"; // Замените на ваш URL API
+        private const string apiBaseUrl = "http://localhost:5000/api"; // Замените на ваш URL API
 
         public Form3()
         {

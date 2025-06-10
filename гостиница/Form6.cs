@@ -38,7 +38,7 @@ namespace гостиница
                 string json = JsonSerializer.Serialize(loginData);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                string apiUrl = "https://localhost:7029/api/Users/login";
+                string apiUrl = "http://localhost:5000/api/Users/login";
 
                 HttpResponseMessage response = await client.PostAsync(apiUrl, content);
 
